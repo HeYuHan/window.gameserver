@@ -34,7 +34,7 @@
 *.ipdb
 *pdb
 *.VC.opendb
-lib/*
+lib/libprotobuf.debug.lib
 */x64/*
 *.tlog
 *.log
