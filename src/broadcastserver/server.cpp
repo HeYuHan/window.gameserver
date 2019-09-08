@@ -1,9 +1,22 @@
 #include "server.h"
+#include "game.h"
+#include "game_config.h"
 #include <log.h>
 #include <NetworkConnection.h>
 #include <Timer.h>
+#include <LuaEngine.h>
 #include <unordered_map>
+#include <properties.h>
+
 #include <vector>
+#include <stdio.h>
+#include <windows.h>
+#include <tlhelp32.h>
+#include <string>
+#include <tchar.h>
+#include <Psapi.h>
+#include <conio.h>
+#pragma comment (lib,"Psapi.lib")
 using namespace std;
 USING_NS_CORE
 typedef unordered_map<uint64_t, Client*> UdpClientMap;
@@ -12,6 +25,12 @@ typedef pair<uint64_t, Client*> UdpClientMapPair;
 UdpClientMap m_UdpClientMap;
 Timer m_UpdateTimer;
 Server gServer;
+
+
+
+
+
+
 Server::Server()
 {
 }
@@ -106,6 +125,7 @@ void Server::OnTcpAccept(evutil_socket_t socket, sockaddr *addr)
 }
 void ServerUpdate(float t, void*)
 {
+	gGame.Update(t);
 	gServer.Update();
 	for (UdpClientIterator it = m_UdpClientMap.begin(); it != m_UdpClientMap.end();)
 	{
@@ -133,10 +153,58 @@ void ServerUpdate(float t, void*)
 }
 bool Server::Init()
 {
+
+
 	if (BaseServer::Init())
 	{
 		do
 		{
+			LuaEngine::GetInstance()->Start();
+			LuaEngine::GetInstance()->LuaSearchPath("path", "./../src/script/?.lua");
+			LuaEngine::GetInstance()->LuaSearchPath("path", "./../script/?.lua");
+			LuaEngine::GetInstance()->LuaSearchPath("path", "./script/?.lua");
+			if (!gConfig.Init())
+			{
+				log_error("cant init game config");
+				break;
+			}
+			//check process
+			{
+				HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+				if (INVALID_HANDLE_VALUE == hSnapshot)
+				{
+					return NULL;
+				}
+				PROCESSENTRY32 pe = { 0 };
+				pe.dwSize = sizeof(PROCESSENTRY32);
+				DWORD processId = GetCurrentProcessId();
+				for (bool fOk = Process32First(hSnapshot, &pe); fOk; fOk = Process32Next(hSnapshot, &pe))
+				{
+					if (pe.th32ProcessID == processId)continue;
+					char szProcessName[MAX_PATH] = { 0 };
+					HANDLE        hProcess;
+					hProcess = OpenProcess(PROCESS_ALL_ACCESS, 0, pe.th32ProcessID);
+					if (hProcess && GetProcessImageFileName(hProcess, szProcessName, MAX_PATH))
+					{
+						std::string str(szProcessName);
+						if (str.find("broadcastserver") != std::string::npos)
+						{
+							log_info("kill %s", szProcessName);
+							TerminateProcess(hProcess, 0);
+							CloseHandle(hProcess);
+							//break;
+						}
+						else if (gConfig.m_ClientPath && str.find(gConfig.m_ClientPath) != std::string::npos)
+						{
+							log_info("kill %s", szProcessName);
+							TerminateProcess(hProcess, 0);
+							bool b = CloseHandle(hProcess);
+							//break;
+						}
+					}
+				}
+			}
+
 			if (m_MaxClient == 0)
 			{
 				log_error("Max Client Is Zero");
@@ -166,8 +234,48 @@ bool Server::Init()
 			{
 				log_info("udp server run in %s pwd %s", m_UdpAddr, m_UdpPwd);
 			}
+			
 			m_UpdateTimer.Init(0, ServerUpdate, NULL, true);
 			m_UpdateTimer.Begin();
+			
+			if (gConfig.m_ClientPath > 0)
+			{
+				char process_path[MAX_PATH] = { 0 };
+				int port_tcp = -1;
+				int prot_udp = -1;
+				if (m_TcpAddr)
+				{
+					char address[256];
+					const char * port_start = strchr(m_TcpAddr, ':');
+					if (port_start)
+					{
+						memcpy(address, m_TcpAddr, port_start - m_TcpAddr);
+						address[port_start - m_TcpAddr] = 0;
+						port_tcp = atoi(port_start + 1);
+					}
+				}
+				if (m_UdpAddr)
+				{
+					char address[256];
+					const char * port_start = strchr(m_UdpAddr, ':');
+					if (port_start)
+					{
+						memcpy(address, m_UdpAddr, port_start - m_UdpAddr);
+						address[port_start - m_UdpAddr] = 0;
+						prot_udp = atoi(port_start + 1);
+					}
+				}
+				sprintf(process_path,"%s -RunWithServer -PortTcp=%d -PortUdp=%d %s", gConfig.m_ClientPath, port_tcp, prot_udp,gConfig.m_ClientExeArg);
+				STARTUPINFO start_info;
+				PROCESS_INFORMATION process_info;
+				ZeroMemory(&start_info, sizeof(start_info));
+				ZeroMemory(&process_info, sizeof(process_info));
+				if (CreateProcess(NULL, process_path, NULL, NULL, false, 0, NULL, NULL, &start_info, &process_info))
+				{
+					CloseHandle(process_info.hThread);
+					CloseHandle(process_info.hProcess);
+				}
+			}
 			return true;
 		} while (false);
 		

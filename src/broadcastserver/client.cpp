@@ -2,8 +2,10 @@
 #include "client.h"
 #include <log.h>
 #include <tools.h>
-#include "server.h"
 #include <NetworkConnection.h>
+#include "game.h"
+#include "server.h"
+
 USING_NS_CORE
 Client::Client():NetworkStream(1024*1024*2, 1024 * 1024 * 2), m_TcpConnection(this), m_UdpConnection(this)
 {
@@ -15,65 +17,7 @@ Client::~Client()
 
 void Client::OnMessage()
 {
-	if (m_ProfileLength < 0)
-	{
-		m_ProfileLength = MIN(read_end - read_position, MAX_PROFILE_LEN);
-		ReadData(m_Profile, m_ProfileLength);
-		for (Core::uint i = 0; i < gServer.m_ClientPool.Size(); i++)
-		{
-			Client* c = gServer.m_ClientPool.Begin() + i;
-			if (c->connection && c->m_ProfileLength>0)
-			{
-				if (c->uid != uid)
-				{
-					this->BeginWrite();
-					this->WriteByte(CONNECTED);
-					this->WriteUInt(c->uid);
-					this->WriteData(c->m_Profile, c->m_ProfileLength);
-					this->EndWrite();
-
-					c->BeginWrite();
-					c->WriteByte(CONNECTED);
-					c->WriteUInt(this->uid);
-					c->WriteData(this->m_Profile, this->m_ProfileLength);
-					c->EndWrite();
-				}
-			}
-		}
-		return;
-	}
-	Core::uint to_uid = 0;
-	ReadUInt(to_uid);
-	if (to_uid > 0)
-	{
-		Client* c = gServer.m_ClientPool.Get(to_uid);
-		if (c->connection && c->m_ProfileLength>0)
-		{
-			c->BeginWrite();
-			c->WriteByte(MESSAGE);
-			c->WriteUInt(this->uid);
-			c->WriteData(read_position, read_end - read_position);
-			c->EndWrite();
-		}
-	}
-	else
-	{
-		for (Core::uint i = 0; i < gServer.m_ClientPool.Size(); i++)
-		{
-			Client* c = gServer.m_ClientPool.Begin() + i;
-			if (c->connection && c->m_ProfileLength>0)
-			{
-				if (c->uid != uid)
-				{
-					c->BeginWrite();
-					c->WriteByte(MESSAGE);
-					c->WriteUInt(this->uid);
-					c->WriteData(read_position, read_end - read_position);
-					c->EndWrite();
-				}
-			}
-		}
-	}
+	gGame.OnClientMessage(this);
 
 }
 
@@ -84,34 +28,26 @@ void Client::OnConnected()
 	BeginWrite();
 	WriteUInt(uid);
 	EndWrite();
-
+	m_IsObClient = false;
 
 
 }
 
 void Client::OnDisconnected()
 {
-	this->connection = NULL;
-	for (Core::uint i = 0; i < gServer.m_ClientPool.Size(); i++)
-	{
-		Client* c = gServer.m_ClientPool.Begin() + i;
-		if (c->connection && c->m_ProfileLength>0)
-		{
-			if (c->GetGUID() != GetGUID())
-			{
-				c->BeginWrite();
-				c->WriteByte(DISCONNECTED);
-				c->WriteUInt(uid);
-				c->EndWrite();
-			}
-		}
-	}
+	gGame.OnClientDisconnect(this);
 	gServer.m_ClientPool.Free(uid);
+	this->connection = NULL;
 }
 
 uint64_t Client::GetGUID()
 {
 	return m_ConnectionType == TCP_SOCKET ? uid : m_UdpGUID;
+}
+
+bool Client::IsValid()
+{
+	return connection != NULL && (m_ProfileLength>0 || m_IsObClient);
 }
 
 

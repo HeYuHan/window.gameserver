@@ -38,4 +38,6 @@ lib/libprotobuf.debug.lib
 */x64/*
 *.tlog
 *.log
+*.ilk
+
 

@@ -24,12 +24,30 @@
     <ClCompile Include="..\src\broadcastserver\client.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\broadcastserver\game.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\broadcastserver\DropItemManager.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\broadcastserver\game_config.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\broadcastserver\server.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="..\src\broadcastserver\client.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\broadcastserver\game.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\broadcastserver\DropItemManager.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\broadcastserver\game_config.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

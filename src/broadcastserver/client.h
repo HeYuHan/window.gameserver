@@ -7,17 +7,6 @@
 #include <TcpConnection.h>
 #define MAX_PROFILE_LEN 1024*512
 
-enum SYNC_MESSAGE_TYPE
-{
-	CONNECTED=1,DISCONNECTED,MESSAGE
-};
-
-
-
-
-
-
-
 class Server;
 class Client;
 
@@ -59,15 +48,17 @@ public:
 	UdpImp m_UdpConnection;
 	char m_Profile[MAX_PROFILE_LEN];
 	int m_ProfileLength;
-
 	float m_Heart;
+	bool m_IsObClient;
+	bool m_MapLoaded;
+	int m_CoinCount;
 
 public:
 	void OnMessage();
 	void OnConnected();
 	void OnDisconnected();
 	uint64_t GetGUID();
-
+	virtual bool IsValid();
 };
 
 

@@ -102,7 +102,6 @@ public:
 	void Start(const char* mainLua=0);
 	bool DoFile(const char* file_path);
 	bool DoString(const char* str);
-	void NewEnv();
 
 	bool CreateScriptHandle(LuaInterface *lua);
 	void DestoryScriptHandle(LuaInterface *lua);
@@ -135,6 +134,7 @@ public:
 
 
 	static LuaEngine* GetInstance();
+	static lua_State* NewState();
 private:
 	void Pop(int old_top,const char* msg=0);
 	void OnError(const char* error);

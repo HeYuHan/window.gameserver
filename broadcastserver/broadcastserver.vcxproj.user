@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>--addr.udp=0.0.0.0:6680 --addr.tcp=0.0.0.0:9201 --max=10 --log_name=broadserver</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--addr.udp=0.0.0.0:6680 --addr.tcp=0.0.0.0:9500 --max=10 --log_name=broadserver</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>

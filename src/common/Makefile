@@ -11,6 +11,7 @@ LFLAGS =
 
 CFLAGS = -c -fPIC
 CFLAGS += -I.
+CFLAGS += -I./sqlitecpp
 CFLAGS += -I./$(RAKNET_SOURCE_DIR)/Source
 CFLAGS += -I/usr/local/include
 CFLAGS += -I/usr/local/include/hiredis
@@ -43,6 +44,12 @@ LUA = $(patsubst %.c,objs/%.o,$(LUA_SOURCES))
 CJSON_SOURCES = $(wildcard cjson/*.c)
 CJSON = $(patsubst %.c,objs/%.o,$(CJSON_SOURCES))
 
+SQLITE3_SOURCES = $(wildcard sqlite3/*.c)
+SQLITE3 = $(patsubst %.c,objs/%.o,$(CJSON_SOURCES))
+
+SQLITECPP_SOURCES = $(wildcard sqlite3/*.c)
+SQLITECPP = $(patsubst %.c,objs/%.o,$(CJSON_SOURCES))
+
 PF = LINUX
 DEPS_LIB = $(LOG_LIB) $(EVENT_LIB) $(RAKNET_LIB)
 
@@ -74,30 +81,28 @@ $(EVENT_LIB) : $(EVENT_SOURCE_DIR)/Makefile
 $(EVENT_SOURCE_DIR)/Makefile : $(EVENT_SOURCE_DIR)/configure
 	$(EVENT_SOURCE_DIR)/configure --prefix=/usr/local
 
-#log4cpp
-$(LOG_LIB) : $(LOG4CPP_SOURCE_DIR)/Makefile
-	$(MAKE) -C $(LOG4CPP_SOURCE_DIR)
-	$(MAKE) -C $(LOG4CPP_SOURCE_DIR) install
-
-$(LOG4CPP_SOURCE_DIR)/Makefile : $(LOG4CPP_SOURCE_DIR)/configure
-	$(LOG4CPP_SOURCE_DIR)/configure --prefix=/usr/local
 
 #raknet
 $(RAKNET_LIB) : $(RAKNET_SOURCE_DIR)/Makefile
 	$(MAKE) -C $(RAKNET_SOURCE_DIR)
 
+objs/lua/%.o: sqlitecpp/%.cpp
+	$(CC) $(CFLAGS)  -o $@ $<
+
+objs/lua/%.o: sqlite3/%.c
+	$(C) $(CFLAGS) -o $@ $<
 
 objs/lua/%.o: lua/%.c
 	$(C) $(CFLAGS) -DLUA_COMPAT_ALL -o $@ $<
 
 objs/cjson/%.o: cjson/%.c
-	$(C) $(CFLAGS) -DLUA_COMPAT_ALL -o $@ $<
+	$(C) $(CFLAGS)  -o $@ $<
 	
 objs/%.o: %.cpp
 	$(CC) $(CFLAGS) $(CPPFLAGS)  -o $@ $<
 
 clean :
-	rm -f $(TARGET) objs/*.o objs/json/*.o *.o objs/lua/*.o objs/LuaBridge/*.o objs/lua/*.o objs/cjson/*.o
+	rm -f $(TARGET) objs/*.o objs/json/*.o *.o objs/lua/*.o objs/LuaBridge/*.o objs/lua/*.o objs/cjson/*.o objs/sqlite3/*.o objs/sqlitecpp/*.o
 	
 
 deps: $(DEPS_LIB)
@@ -105,21 +110,18 @@ deps: $(DEPS_LIB)
 clean_deps:
 	$(MAKE) -C $(RAKNET_SOURCE_DIR) clean
 	$(MAKE) -C $(EVENT_SOURCE_DIR) clean
-	$(MAKE) -C $(LOG4CPP_SOURCE_DIR) clean
 	$(MAKE) -C $(EVENT_SOURCE_DIR) uninstall
-	$(MAKE) -C $(LOG4CPP_SOURCE_DIR) uninstall
 
 
 
 
-$(TARGET) : $(TEMP) $(OBJS) $(LUA) $(CJSON)
+$(TARGET) : $(TEMP) $(OBJS) $(LUA) $(CJSON) $(SQLITE3) $(SQLITECPP)
 	cp -f $(RAKNET_LIB) ../lib/
 	cp -f $(EVENT_LIB) ../lib/
 	cp -f $(EVENT_LIB_CORE) ../lib/
 	cp -f $(EVENT_LIB_EXT) ../lib/
 	cp -f $(EVENT_LIB_PTHREAD) ../lib/
-	cp -f $(LOG_LIB) ../lib/
 	cp -f $(ZLOG_LIB) ../lib/
 	cp -f $(HIREDIS_LIB) ../lib/
-	$(AR) $(LFLAGS) rcs $@ $(OBJS) $(LUA) $(CJSON)
+	$(AR) $(LFLAGS) rcs $@ $(OBJS) $(LUA) $(CJSON) $(SQLITE3) $(SQLITECPP)
 	

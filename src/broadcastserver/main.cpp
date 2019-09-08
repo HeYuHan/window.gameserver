@@ -2,6 +2,7 @@
 #include <tools.h>
 #include <log.h>
 #include "server.h"
+//#pragma comment( linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"" )
 enum
 {
 	addr_udp = 0x100,
@@ -31,11 +32,11 @@ struct option long_options[] =
 int main(int argc, char **args) {
 	bool as_daemon = false;
 	gLogger.logName = "server";
-	gServer.m_TcpAddr = NULL;
-	gServer.m_UdpAddr = NULL;
+	gServer.m_TcpAddr = "0.0.0.0:9500";
+	gServer.m_UdpAddr = "0.0.0.0:9501";
 	gServer.m_UdpPwd = "broadserver";
 	gServer.m_HeartTime = 5;
-	gServer.m_MaxClient = 0;
+	gServer.m_MaxClient = 2;
 	while (1)
 	{
 		int option_index = 0;

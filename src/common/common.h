@@ -28,7 +28,7 @@ namespace google
 	}
 }
 
-//lib
+
 struct event_base;
 BEGIN_NS_CORE
 typedef event_base Event;

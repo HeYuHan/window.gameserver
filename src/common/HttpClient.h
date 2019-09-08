@@ -1,5 +1,4 @@
 #pragma once
-#ifndef WINDOWS_SAMPLE_RELEASE
 #ifndef __HTTP_CLIENT_H__
 #define __HTTP_CLIENT_H__
 #include "common.h"
@@ -66,5 +65,4 @@ extern CurlRequestManager gCUrlManager;
 
 
 END_NS_CORE
-#endif
 #endif
