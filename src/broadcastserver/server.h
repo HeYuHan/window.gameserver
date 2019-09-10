@@ -5,6 +5,7 @@
 #include <UdpListener.h>
 #include <TcpListener.h>
 #include <BaseServer.h>
+#include <LocalUserDatabaseHelper.h>
 #include "client.h"
 
 class Server:public UdpListener,public TcpListener,public BaseServer
@@ -30,6 +31,7 @@ private:
 	virtual void OnTcpAccept(evutil_socket_t socket, sockaddr *) override;
 
 public:
+	Core::LocalUserDatabaseHelper m_LocalDBHelper;
 	Core::ObjectPool<Client> m_ClientPool;
 	const char* m_TcpAddr;
 	const char* m_UdpAddr;

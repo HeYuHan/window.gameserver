@@ -69,14 +69,14 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)3rd\lua-5.1.5\src;$(SolutionDir)3rd\curl-7.60.0\include;$(SolutionDir)3rd\log4cpp\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)3rd\pthread\include;$(SolutionDir)3rd\libevent\WIN32-Code\nmake;$(SolutionDir)3rd\libevent\include;$(SolutionDir)3rd\RakNet\Source;$(SolutionDir)src\proto\out;$(SolutionDir)src\common\linux;$(SolutionDir)src\common;$(SolutionDir)3rd\protobuf-3.0.0\cmake\build\solution\include</IncludePath>
+    <IncludePath>$(SolutionDir)3rd\protobuf-3.0.0\cmake\build\solution\include;$(SolutionDir)3rd\curl-7.60.0\include;$(SolutionDir)3rd\log4cpp\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)3rd\pthread\include;$(SolutionDir)3rd\libevent\WIN32-Code\nmake;$(SolutionDir)3rd\libevent\include;$(SolutionDir)3rd\RakNet\Source;$(SolutionDir)src\common;$(SolutionDir)3rd\WinZlog\zlog\src;$(SolutionDir)3rd\hiredis;$(SolutionDir)src\common\sqlite3;$(SolutionDir)src\common\sqlitecpp;$(SolutionDir)src\common\linux</IncludePath>
     <LibraryPath>$(SolutionDir)lib\ssl;$(SolutionDir)lib;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)exe</OutDir>
     <IntDir>$(SolutionDir)Temp\$(ProjectName)</IntDir>
     <TargetName>broadcastserver</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(SolutionDir)3rd\lua-5.1.5\src;$(SolutionDir)3rd\curl-7.60.0\include;$(SolutionDir)3rd\log4cpp\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)3rd\pthread\include;$(SolutionDir)3rd\libevent\WIN32-Code\nmake;$(SolutionDir)3rd\libevent\include;$(SolutionDir)3rd\RakNet\Source;$(SolutionDir)src\proto\out;$(SolutionDir)src\common\linux;$(SolutionDir)src\common;$(SolutionDir)3rd\protobuf-3.0.0\cmake\build\solution\include;</IncludePath>
+    <IncludePath>$(SolutionDir)3rd\protobuf-3.0.0\cmake\build\solution\include;$(SolutionDir)3rd\curl-7.60.0\include;$(SolutionDir)3rd\log4cpp\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)3rd\pthread\include;$(SolutionDir)3rd\libevent\WIN32-Code\nmake;$(SolutionDir)3rd\libevent\include;$(SolutionDir)3rd\RakNet\Source;$(SolutionDir)src\common;$(SolutionDir)3rd\WinZlog\zlog\src;$(SolutionDir)3rd\hiredis;$(SolutionDir)src\common\sqlite3;$(SolutionDir)src\common\sqlitecpp</IncludePath>
     <OutDir>$(SolutionDir)exe</OutDir>
     <IntDir>$(SolutionDir)Temp\$(ProjectName)</IntDir>
     <LibraryPath>$(SolutionDir)lib\ssl;$(SolutionDir)lib;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
@@ -132,6 +132,7 @@
     <ClCompile Include="..\src\broadcastserver\game.cpp" />
     <ClCompile Include="..\src\broadcastserver\game_config.cpp" />
     <ClCompile Include="..\src\broadcastserver\main.cpp" />
+    <ClCompile Include="..\src\broadcastserver\RaceRoadChecker.cpp" />
     <ClCompile Include="..\src\broadcastserver\server.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -139,6 +140,7 @@
     <ClInclude Include="..\src\broadcastserver\DropItemManager.h" />
     <ClInclude Include="..\src\broadcastserver\game.h" />
     <ClInclude Include="..\src\broadcastserver\game_config.h" />
+    <ClInclude Include="..\src\broadcastserver\RaceRoadChecker.h" />
     <ClInclude Include="..\src\broadcastserver\server.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -23,7 +23,7 @@ void Client::OnMessage()
 
 void Client::OnConnected()
 {
-	m_ProfileLength = -1;
+	m_UserInfo = Core::LocalUserDatabaseHelper::SampleUser();
 	Reset();
 	BeginWrite();
 	WriteUInt(uid);
@@ -47,7 +47,7 @@ uint64_t Client::GetGUID()
 
 bool Client::IsValid()
 {
-	return connection != NULL && (m_ProfileLength>0 || m_IsObClient);
+	return connection != NULL && (!m_UserInfo.m_Account.empty() || m_IsObClient);
 }
 
 

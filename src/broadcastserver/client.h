@@ -5,7 +5,7 @@
 #include <NetworkConnection.h>
 #include <UdpConnection.h>
 #include <TcpConnection.h>
-#define MAX_PROFILE_LEN 1024*512
+#include <LocalUserDatabaseHelper.h>
 
 class Server;
 class Client;
@@ -46,12 +46,16 @@ public:
 	Core::byte m_ConnectionType;
 	TcpImp m_TcpConnection;
 	UdpImp m_UdpConnection;
-	char m_Profile[MAX_PROFILE_LEN];
-	int m_ProfileLength;
+	Core::LocalUserDatabaseHelper::SampleUser m_UserInfo;
 	float m_Heart;
 	bool m_IsObClient;
 	bool m_MapLoaded;
 	int m_CoinCount;
+	int m_DBCoinCount;
+	Core::uint64 m_RoadCheckerTag;
+	Core::uint64 m_LastCheckIndex;
+	Vector3 m_CheckerPosition;
+
 
 public:
 	void OnMessage();

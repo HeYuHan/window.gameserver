@@ -22,6 +22,27 @@ void GameConfig::AddDropItemPosition(int type, float px, float py, float pz)
 	}
 }
 
+void GameConfig::AddCheckPoint(int index, float r, float px, float py, float pz, bool end)
+{
+	if (index > 64 || index < 0)
+	{
+		log_error("check point max index %d  set %d", 64, index);
+		return;
+	}
+	if (m_CheckerPointCount < MAX_CHECK_POINT_COUNT)
+	{
+		m_CheckerPointArray[m_CheckerPointCount].mIndex = index;
+		m_CheckerPointArray[m_CheckerPointCount].mRadius = r;
+		m_CheckerPointArray[m_CheckerPointCount].mPosition = Vector3(px, py, pz);
+		m_CheckerPointArray[m_CheckerPointCount].mEndPoint = end;
+		m_CheckerPointCount++;
+	}
+	else
+	{
+		log_error("check point max size %d", MAX_CHECK_POINT_COUNT);
+	}
+}
+
 
 DropItemData* GameConfig::AddDropItem()
 {
@@ -45,6 +66,7 @@ bool GameConfig::Init()
 		.beginClass<GameConfig>("GameConfig")
 		.addFunction("AddBrithPose", &GameConfig::AddBrithPose)
 		.addFunction("AddDropItemPosition", &GameConfig::AddDropItemPosition)
+		.addFunction("AddCheckPoint", &GameConfig::AddCheckPoint)
 		.addFunction("AddDropItem", &GameConfig::AddDropItem)
 		.addData("ClientPath",&GameConfig::m_ClientPath)
 		.addData("ClientArg", &GameConfig::m_ClientExeArg)
@@ -66,6 +88,7 @@ bool GameConfig::Init()
 	memset(m_DropItemData, 0, sizeof(DropItemData)*MAX_DROP_COUNT);
 	m_BrithPoseCount = 0;
 	m_DropItemCount = 0;
+	m_CheckerPointCount = 0;
 	m_ClientPath = NULL;
 	m_ClientExeArg = NULL;
 	const char* auto_path = AutoFilePath("config.lua");
@@ -110,6 +133,14 @@ bool GameConfig::CopyDropItemPosition(int type, int index, Vector3 & p)
 		return true;
 	}
 	return false;
+}
+
+bool GameConfig::CopyCheckPointData(CheckerPoint * dest, int & size)
+{
+	if (m_CheckerPointCount > size)return false;
+	memcpy(dest, m_CheckerPointArray, sizeof(CheckerPoint)*m_CheckerPointCount);
+	size = m_CheckerPointCount;
+	return true;
 }
 
 

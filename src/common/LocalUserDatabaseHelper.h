@@ -2,6 +2,7 @@
 #ifndef __LocalUserDatabaseHelper_H__
 #define __LocalUserDatabaseHelper_H__
 #include<string>
+#include <vector>
 namespace SQLite
 {
 	class Database;
@@ -42,6 +43,7 @@ namespace Core
 		int DelUserById(int id);
 		int DelUserByAccount(const char* account);
 		int DelUserByName(const char* name);
+		void GetAllUser(std::vector<SampleUser> &ret);
 	private:
 		SQLite::Database *m_Database;
 	};

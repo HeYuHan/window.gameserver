@@ -2,7 +2,9 @@
 #include "server.h"
 #include "game_config.h"
 #include <properties.h>
+#include <vector>
 using namespace Core;
+typedef Core::LocalUserDatabaseHelper::SampleUser User;
 Game gGame;
 Game::Game():m_GameState(None)
 {
@@ -27,6 +29,9 @@ void Game::OnClientMessage(Client * c)
 	case CM_SELECT_GAME_MAP:
 		OnRequestSelectMap(c);
 		break;
+	case CM_PLAYER_MOVE:
+		OnPlayerMove(c);
+		break;
 	default:
 		break;
 	}
@@ -38,16 +43,33 @@ void Game::OnClientDisconnect(Client * c)
 
 void Game::OnBroadcastAvatarData(Client * c)
 {
-	
 	int data_size = c->read_end - c->read_position;
-	if (data_size > MAX_PROFILE_LEN)
+	c->ReadString(c->m_UserInfo.m_Account);
+	c->ReadString(c->m_UserInfo.m_Name);
+	c->ReadString(c->m_UserInfo.m_UserData);
+	c->m_UserInfo.m_Password = "empty";
+	c->m_DBCoinCount = 0;
+	User temp = c->m_UserInfo;
+	if (0 != gServer.m_LocalDBHelper.GetUserByAccount(temp))
 	{
-		log_error("client avatar data size too more");
-		c->connection->Disconnect();
-		return;
+		Json::Value root;
+		root["profile"] = c->m_UserInfo.m_UserData;
+		root["score"] = 0;
+		Json::FastWriter writer;
+		c->m_UserInfo.m_UserData = writer.write(root);
+		gServer.m_LocalDBHelper.AddUser(c->m_UserInfo);
 	}
-	memcpy(c->m_Profile, c->read_position, data_size);
-	c->m_ProfileLength = data_size;
+	else
+	{
+		Json::Reader reader;
+		Json::Value root;
+		reader.parse(temp.m_UserData, root);
+		root["profile"] = c->m_UserInfo.m_UserData;
+		if(!root["score"].isNull())c->m_DBCoinCount = root["score"].asInt();
+		Json::FastWriter writer;
+		c->m_UserInfo.m_UserData = writer.write(root);
+		gServer.m_LocalDBHelper.UpdateUser(c->m_UserInfo);
+	}
 	Client* pool_begin = gServer.m_ClientPool.Begin();
 	for (int i = 0; i < gServer.m_ClientPool.Size(); i++)
 	{
@@ -74,6 +96,92 @@ void Game::OnBroadcastAvatarData(Client * c)
 	}
 }
 
+void Game::OnPlayerMove(Client* c)
+{
+	char *data_start = c->read_position;
+	int data_size = c->read_end - data_start;
+	Core::byte flag=0;
+	float time;
+	c->ReadFloat(time);
+	float skip_data;
+	if (flag&MOVE_FLAG_INPUT_STEER)c->ReadFloat(skip_data);
+	if (flag&MOVE_FLAG_INPUT_BRAKE)c->ReadFloat(skip_data);
+	if (flag&MOVE_FLAG_INPUT_RUN)c->ReadFloat(skip_data);
+	Vector3 pos;
+	if (flag & MOVE_FLAG_POSE_POSTION)
+	{
+		c->ReadVector3(pos);
+
+		//逆行检查
+		Vector3 run_dir = pos - c->m_CheckerPosition;
+		float len = Length(run_dir);
+		if (len > 5)
+		{
+			c->m_CheckerPosition = pos;
+			bool check_dir = m_RoadCheckerManager.CheckDir(Normalize(run_dir), pos, c->m_RoadCheckerTag == 0 ? 0 : (c->m_LastCheckIndex + 1));
+			c->BeginWrite();
+			c->WriteByte(SM_PLSYER_RUN_DIR_ERROR);
+			c->WriteBool(check_dir);
+			c->EndWrite();
+		}
+
+
+
+
+		CheckerPoint p;
+		if (m_RoadCheckerManager.Check(pos, p))
+		{
+			//碰到最后一个点，检查一圈结束
+			if (p.mEndPoint)
+			{
+				c->m_LastCheckIndex = 0;
+				bool finsh = true;
+				int untag_count = 0;
+				for (int i = 0; i < p.mIndex; i++)
+				{
+					if (((1 << i)&c->m_RoadCheckerTag) == 0)
+					{
+						log_info("checker lost %d", i);
+						untag_count++;
+					}
+				}
+				//触碰半数以上的点，此圈有效
+				if (untag_count < p.mIndex*0.5f)
+				{
+					c->m_RoadCheckerTag = 0;
+					BalanceGame();
+				}
+				else
+				{
+					c->m_RoadCheckerTag = 0;
+				}
+			}
+			else
+			{
+				c->m_LastCheckIndex = 0;
+				c->m_RoadCheckerTag |= 1 << p.mIndex;
+			}
+		}
+	}
+
+
+
+	Client* pool_begin = gServer.m_ClientPool.Begin();
+	for (int i = 0; i < gServer.m_ClientPool.Size(); i++)
+	{
+		Client* other = pool_begin + i;
+		if (other->IsValid())
+		{
+			other->BeginWrite();
+			other->WriteByte(SM_PLAYER_MOVE);
+			other->WriteUInt(c->uid);
+			other->WriteData(data_start, data_size);
+			other->EndWrite();
+
+		}
+	}
+}
+
 void Game::ClearData()
 {
 	m_GameState = Wait;
@@ -94,7 +202,76 @@ void Game::Update(float t)
 		m_GameSyncTime = m_GameRunTime;
 		SyncGameTime();
 	}
+	if (m_GameRunTime > m_GameTotleTime)
+	{
+		BalanceGame();
+	}
 	m_DropManager.Update(t);
+}
+
+void Game::BalanceGame()
+{
+	if (m_GameState != Play)return;
+	m_GameState = Balance;
+	std::vector<User> db_users;
+	gServer.m_LocalDBHelper.GetAllUser(db_users);
+	std::sort(db_users.begin(), db_users.end(), [&](User u1, User u2) {
+		Json::Reader reader;
+		Json::Value root;
+		reader.parse(u1.m_UserData, root);
+		int con1 = 0;
+		if (!root["score"].isNull())con1 = root["score"].asInt();
+		reader = Json::Reader();
+		root = Json::Value();
+		reader.parse(u2.m_UserData, root);
+		int con2 = 0;
+		if (!root["score"].isNull())con2 = root["score"].asInt();
+
+		return con1<con2;
+	});
+	
+
+	Client* pool_begin = gServer.m_ClientPool.Begin();
+	for (int i = 0; i < gServer.m_ClientPool.Size(); i++)
+	{
+		Client* other = pool_begin + i;
+		if (other->IsValid())
+		{
+			if (!other->m_IsObClient)
+			{
+				if (other->m_CoinCount > other->m_DBCoinCount)
+				{
+					Json::Reader reader;
+					Json::Value root;
+					reader.parse(other->m_UserInfo.m_UserData, root);
+					root["score"] = other->m_CoinCount;
+					Json::FastWriter writer;
+					gServer.m_LocalDBHelper.UpdateUser(other->m_UserInfo);
+				}
+			}
+
+
+
+			other->BeginWrite();
+			other->WriteByte(SM_GAME_BALANCE);
+
+			if (other->m_IsObClient)
+			{
+				other->WriteInt(other->m_CoinCount);
+				other->WriteInt(other->m_DBCoinCount);
+			}
+			Core::byte count = MIN(db_users.size(), 10);
+			other->WriteByte(count);
+			for (int j = 0; j < count; j++)
+			{
+				other->WriteString(db_users[j].m_Account.c_str());
+				other->WriteString(db_users[j].m_Name.c_str());
+				other->WriteString(db_users[j].m_UserData.c_str());
+			}
+			other->EndWrite();
+
+		}
+	}
 }
 
 void Game::OnRequestSelectMap(Client* c)
@@ -109,8 +286,6 @@ void Game::OnRequestSelectMap(Client* c)
 	}
 	m_MapDataLen = data_size;
 	memcpy(m_MapData, c->read_position, m_MapDataLen);
-
-	c->m_ProfileLength = data_size;
 	Client* pool_begin = gServer.m_ClientPool.Begin();
 	for (int i = 0; i < gServer.m_ClientPool.Size(); i++)
 	{
@@ -159,22 +334,23 @@ void Game::OnClientMapLoaded(Client * c)
 	m_GameSyncTime = 0;
 	m_GameRunTime = 0;
 	m_DropManager.Init(this);
+	m_RoadCheckerManager.Init();
 	for (int i = 0; i < gServer.m_ClientPool.Size(); i++)
 	{
 		Client* other = pool_begin + i;
 		if (other->IsValid())
 		{
 			other->m_CoinCount = 0;
+			other->m_RoadCheckerTag = 0;
 
-
-
-
-
-
-
+			BrithPose pose;
+			gConfig.CopyBrithPose(0, pose);
+			other->m_CheckerPosition = pose.position;
 			other->BeginWrite();
 			other->WriteByte(SM_GAME_START);
 			other->WriteFloat(m_GameTotleTime);
+			other->WriteVector3(pose.position);
+			other->WriteVector3(pose.rotation);
 			other->EndWrite();
 		}
 	}

@@ -234,7 +234,7 @@ bool Server::Init()
 			{
 				log_info("udp server run in %s pwd %s", m_UdpAddr, m_UdpPwd);
 			}
-			
+			m_LocalDBHelper.OpenDatabase("user.db");
 			m_UpdateTimer.Init(0, ServerUpdate, NULL, true);
 			m_UpdateTimer.Begin();
 			
