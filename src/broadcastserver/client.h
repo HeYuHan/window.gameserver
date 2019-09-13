@@ -50,11 +50,14 @@ public:
 	float m_Heart;
 	bool m_IsObClient;
 	bool m_MapLoaded;
+	bool m_RevciveUID;
 	int m_CoinCount;
 	int m_DBCoinCount;
 	Core::uint64 m_RoadCheckerTag;
 	Core::uint64 m_LastCheckIndex;
 	Vector3 m_CheckerPosition;
+	Vector3 m_Position;
+	Vector3 m_Rotation;
 
 
 public:

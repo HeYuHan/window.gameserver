@@ -17,7 +17,15 @@ Client::~Client()
 
 void Client::OnMessage()
 {
-	gGame.OnClientMessage(this);
+	if (!this->m_RevciveUID)
+	{
+		this->m_RevciveUID = true;
+	}
+	else
+	{
+		gGame.OnClientMessage(this);
+	}
+	
 
 }
 
@@ -25,9 +33,8 @@ void Client::OnConnected()
 {
 	m_UserInfo = Core::LocalUserDatabaseHelper::SampleUser();
 	Reset();
-	BeginWrite();
-	WriteUInt(uid);
-	EndWrite();
+	m_RevciveUID = false;
+	connection->Send(&uid,sizeof(Core::uint));
 	m_IsObClient = false;
 
 

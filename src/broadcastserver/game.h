@@ -75,6 +75,7 @@ private:
 private:
 	GameState m_GameState;
 	int m_MapDataLen;
+	int m_BrithIndex;
 	char m_MapData[MAX_MAP_DATA_LEN];
 	float m_GameTotleTime;
 	float m_GameSyncTime;
