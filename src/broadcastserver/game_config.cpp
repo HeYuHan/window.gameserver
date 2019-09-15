@@ -5,7 +5,7 @@ void GameConfig::AddBrithPose(float px,float py, float pz, float rx, float ry, f
 
 	BrithPose &pose = m_BrithPoseArray[m_BrithPoseCount];
 	pose.position = Vector3(px, py, pz);
-	pose.rotation = Vector3(px, py, pz);
+	pose.rotation = Vector3(rx, ry, rz);
 	m_BrithPoseCount++;
 }
 
@@ -72,6 +72,7 @@ bool GameConfig::Init()
 		.addData("ClientArg", &GameConfig::m_ClientExeArg)
 		.addData("GameTime", &GameConfig::m_GameTime)
 		.addData("TotalCircle", &GameConfig::m_TotalCircle)
+		.addData("GameBalanceTime", &GameConfig::m_GameBalanceTime)
 		.endClass()
 		.addFunction("gConfig", getGlobalConfig)
 		//.addVariable("gConfig", configPointer)

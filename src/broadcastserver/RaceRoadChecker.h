@@ -21,7 +21,7 @@ public:
 	~RaceRoadCheckerManager();
 	bool Check(Vector3 pos, CheckerPoint &p);
 	void Init();
-	bool CheckDir(Vector3 run_dir, Vector3 target_postion,int next);
+	bool CheckDir(Vector3 run_dir, Vector3 target_postion,int next,Vector3 &right_dir);
 	//bool GetPonit(int index, CheckerPoint &p);
 private:
 	CheckerPoint m_AllPoint[MAX_CHECK_POINT_COUNT];

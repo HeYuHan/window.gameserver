@@ -51,8 +51,10 @@ public:
 	bool m_IsObClient;
 	bool m_MapLoaded;
 	bool m_RevciveUID;
+	bool m_Complete;
 	int m_CoinCount;
 	int m_DBCoinCount;
+	float m_DBCompleteTime;
 	Core::uint64 m_RoadCheckerTag;
 	Core::uint64 m_LastCheckIndex;
 	Vector3 m_CheckerPosition;

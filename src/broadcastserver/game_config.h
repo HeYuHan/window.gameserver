@@ -36,6 +36,7 @@ public:
 	bool CopyCheckPointData(CheckerPoint* dest, int &size);
 public:
 	float m_GameTime;
+	float m_GameBalanceTime;
 	int m_TotalCircle;
 	int m_DropItemCount;
 	int m_BrithPoseCount;

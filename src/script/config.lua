@@ -1,5 +1,7 @@
 local config = gConfig()
-config.GameTime = 60
+config.GameTime = 180
+config.GameBalanceTime=10
+
 
 
 

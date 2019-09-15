@@ -76,7 +76,7 @@
     <TargetName>broadcastserver</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(SolutionDir)3rd\protobuf-3.0.0\cmake\build\solution\include;$(SolutionDir)3rd\curl-7.60.0\include;$(SolutionDir)3rd\log4cpp\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)3rd\pthread\include;$(SolutionDir)3rd\libevent\WIN32-Code\nmake;$(SolutionDir)3rd\libevent\include;$(SolutionDir)3rd\RakNet\Source;$(SolutionDir)src\common;$(SolutionDir)3rd\WinZlog\zlog\src;$(SolutionDir)3rd\hiredis;$(SolutionDir)src\common\sqlite3;$(SolutionDir)src\common\sqlitecpp</IncludePath>
+    <IncludePath>$(SolutionDir)3rd\protobuf-3.0.0\cmake\build\solution\include;$(SolutionDir)3rd\curl-7.60.0\include;$(SolutionDir)3rd\log4cpp\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)3rd\pthread\include;$(SolutionDir)3rd\libevent\WIN32-Code\nmake;$(SolutionDir)3rd\libevent\include;$(SolutionDir)3rd\RakNet\Source;$(SolutionDir)src\common;$(SolutionDir)3rd\WinZlog\zlog\src;$(SolutionDir)3rd\hiredis;$(SolutionDir)src\common\sqlite3;$(SolutionDir)src\common\sqlitecpp;$(SolutionDir)src\common\linux</IncludePath>
     <OutDir>$(SolutionDir)exe</OutDir>
     <IntDir>$(SolutionDir)Temp\$(ProjectName)</IntDir>
     <LibraryPath>$(SolutionDir)lib\ssl;$(SolutionDir)lib;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
@@ -119,6 +119,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>

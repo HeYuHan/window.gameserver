@@ -30,7 +30,7 @@ void RaceRoadCheckerManager::Init()
 	gConfig.CopyCheckPointData(m_AllPoint, m_PointCount);
 }
 
-bool RaceRoadCheckerManager::CheckDir(Vector3 run_dir, Vector3 target_postion, int next)
+bool RaceRoadCheckerManager::CheckDir(Vector3 run_dir, Vector3 target_postion, int next, Vector3 &right_dir)
 {
 	bool b = false;
 	for (int i = 0; i < m_PointCount; i++)
@@ -38,7 +38,8 @@ bool RaceRoadCheckerManager::CheckDir(Vector3 run_dir, Vector3 target_postion, i
 		if (m_AllPoint[i].mIndex == next)
 		{
 			Vector3 dir = Normalize(m_AllPoint[i].mPosition - target_postion);
-			b = Dot(run_dir, dir) > -0.2f;
+			b = Dot(run_dir, dir) > -0.5f;
+			right_dir = dir;
 			if (b)break;
 		}
 	}
