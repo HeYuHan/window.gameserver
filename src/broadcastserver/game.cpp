@@ -164,12 +164,24 @@ void Game::OnPlayerMove(Client* c)
 			c->m_CheckerPosition = pos;
 			Vector3 out_dir;
 			bool check_dir = m_RoadCheckerManager.CheckDir(Normalize(run_dir), pos, c->m_RoadCheckerTag == 0 ? 0 : (c->m_LastCheckIndex + 1),out_dir);
-			c->BeginWrite();
-			c->WriteByte(SM_PLSYER_RUN_DIR_ERROR);
-			c->WriteBool(check_dir);
-			c->WriteVector3(out_dir);
-			c->WriteInt(c->m_LastCheckIndex * 100 / gConfig.m_CheckerPointCount);
-			c->EndWrite();
+			
+			Client* pool_begin = gServer.m_ClientPool.Begin();
+			for (int i = 0; i < gServer.m_ClientPool.Size(); i++)
+			{
+				Client* other = pool_begin + i;
+				if (other->IsValid())
+				{
+					other->BeginWrite();
+					other->WriteByte(SM_PLSYER_RUN_DIR_ERROR);
+					other->WriteUInt(c->uid);
+					other->WriteBool(check_dir);
+					other->WriteVector3(out_dir);
+					other->WriteInt(c->m_LastCheckIndex * 100 / gConfig.m_CheckerPointCount);
+					other->EndWrite();
+
+				}
+			}
+			
 		}
 
 
