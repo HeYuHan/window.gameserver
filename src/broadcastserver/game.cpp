@@ -438,6 +438,7 @@ void Game::OnClientMapLoaded(Client * c)
 			other->m_CheckerPosition = pose.position;
 			other->m_Position = pose.position;
 			other->m_Rotation = pose.rotation;
+			other->m_IdlePostion = pose.position;
 		}
 	}
 	for (int i = 0; i < gServer.m_ClientPool.Size(); i++)
@@ -475,6 +476,26 @@ void Game::SyncGameTime()
 			other->WriteByte(SM_GAME_SYNC_TIME);
 			other->WriteFloat(m_GameSyncTime);
 			other->EndWrite();
+
+			
+			{
+				float dis = Length(other->m_IdlePostion - other->m_Position);
+				other->m_IdlePostion = other->m_Position;
+				if (dis < 1)
+				{
+					Vector3 out_dir;
+					m_RoadCheckerManager.GetDir(out_dir, other->m_RoadCheckerTag == 0 ? 1 : (other->m_LastCheckIndex + 1));
+
+					other->BeginWrite();
+					other->WriteByte(SM_PLSYER_RUN_DIR_ERROR);
+					other->WriteUInt(other->uid);
+					other->WriteBool(false);
+					other->WriteVector3(out_dir);
+					other->WriteInt(other->m_LastCheckIndex * 100 / gConfig.m_CheckerPointCount);
+					other->EndWrite();
+				}
+			}
+
 		}
 	}
 }

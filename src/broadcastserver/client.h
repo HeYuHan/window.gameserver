@@ -60,6 +60,7 @@ public:
 	Vector3 m_CheckerPosition;
 	Vector3 m_Position;
 	Vector3 m_Rotation;
+	Vector3 m_IdlePostion;
 
 
 public:
