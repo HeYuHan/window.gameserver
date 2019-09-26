@@ -33,7 +33,8 @@ int main(int argc, char **args) {
 	bool as_daemon = false;
 	gLogger.logName = "server";
 	gServer.m_TcpAddr = "0.0.0.0:9500";
-	gServer.m_UdpAddr = "0.0.0.0:9501";
+	gServer.m_HttpAddr = "0.0.0.0:9501";
+	gServer.m_UdpAddr = "0.0.0.0:9502";
 	gServer.m_UdpPwd = "broadserver";
 	gServer.m_HeartTime = 5;
 	gServer.m_MaxClient = 2;

@@ -478,7 +478,7 @@ void Game::SyncGameTime()
 			other->EndWrite();
 
 			
-			{
+			/*{
 				float dis = Length(other->m_IdlePostion - other->m_Position);
 				other->m_IdlePostion = other->m_Position;
 				if (dis < 1)
@@ -494,7 +494,7 @@ void Game::SyncGameTime()
 					other->WriteInt(other->m_LastCheckIndex * 100 / gConfig.m_CheckerPointCount);
 					other->EndWrite();
 				}
-			}
+			}*/
 
 		}
 	}

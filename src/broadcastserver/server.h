@@ -36,6 +36,7 @@ public:
 	const char* m_TcpAddr;
 	const char* m_UdpAddr;
 	const char* m_UdpPwd;
+	const char* m_HttpAddr;
 	int m_MaxClient;
 	int m_HeartTime;
 	virtual bool Init();

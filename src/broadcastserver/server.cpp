@@ -16,6 +16,8 @@
 #include <tchar.h>
 #include <Psapi.h>
 #include <conio.h>
+#include <ThreadEventPool.h>
+#include "serverstate.h"
 #pragma comment (lib,"Psapi.lib")
 using namespace std;
 USING_NS_CORE
@@ -159,6 +161,9 @@ bool Server::Init()
 	{
 		do
 		{
+			AutoFilePath("./config");
+			AutoFilePath("../exe");
+			AutoFilePath("../exe/config");
 			LuaEngine::GetInstance()->Start();
 			LuaEngine::GetInstance()->LuaSearchPath("path", "./../src/script/?.lua");
 			LuaEngine::GetInstance()->LuaSearchPath("path", "./../script/?.lua");
@@ -204,7 +209,6 @@ bool Server::Init()
 					}
 				}
 			}
-
 			if (m_MaxClient == 0)
 			{
 				log_error("Max Client Is Zero");
@@ -225,6 +229,11 @@ bool Server::Init()
 				log_error("cant create tcp server %s", m_TcpAddr);
 				break;
 			}
+			if (m_HttpAddr && !gServerState.CreateHttpServer(m_HttpAddr, 10, 2))
+			{
+				log_error("cant create http server %s", m_HttpAddr);
+				break;
+			}
 			if (m_UdpAddr && !CreateUdpServer(m_UdpAddr, m_UdpPwd, m_MaxClient))
 			{
 				log_error("cant create udp server %s", m_UdpPwd);
@@ -243,6 +252,7 @@ bool Server::Init()
 				char process_path[MAX_PATH] = { 0 };
 				int port_tcp = -1;
 				int prot_udp = -1;
+				int prot_http = -1;
 				if (m_TcpAddr)
 				{
 					char address[256];
@@ -265,7 +275,18 @@ bool Server::Init()
 						prot_udp = atoi(port_start + 1);
 					}
 				}
-				sprintf(process_path,"%s -RunWithServer -PortTcp=%d -PortUdp=%d %s", gConfig.m_ClientPath, port_tcp, prot_udp,gConfig.m_ClientExeArg);
+				if (m_HttpAddr)
+				{
+					char address[256];
+					const char * port_start = strchr(m_HttpAddr, ':');
+					if (port_start)
+					{
+						memcpy(address, m_HttpAddr, port_start - m_HttpAddr);
+						address[port_start - m_HttpAddr] = 0;
+						prot_http = atoi(port_start + 1);
+					}
+				}
+				sprintf(process_path,"%s -RunWithServer -PortTcp=%d -PortUdp=%d -PortHttp=%d %s", gConfig.m_ClientPath, port_tcp, prot_udp,gConfig.m_ClientExeArg);
 				STARTUPINFO start_info;
 				PROCESS_INFORMATION process_info;
 				ZeroMemory(&start_info, sizeof(start_info));
