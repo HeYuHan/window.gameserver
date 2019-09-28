@@ -61,6 +61,7 @@ void Game::OnClientDisconnect(Client * c)
 
 void Game::OnBroadcastAvatarData(Client * c)
 {
+	
 	int data_size = c->read_end - c->read_position;
 	char* data_start = c->read_position;
 	c->ReadString(c->m_UserInfo.m_Account);
@@ -278,6 +279,11 @@ void Game::Update(float t)
 			EndGame();
 		}
 	}
+	else if (m_GameState == Show)
+	{
+		m_GameShowTime -= t;
+		if (m_GameShowTime < 0)StartGame();
+	}
 	if (m_GameState != Play)return;
 	m_GameRunTime += t;
 	if (m_GameRunTime - m_GameSyncTime > 0.99f)
@@ -385,6 +391,15 @@ void Game::OnRequestSelectMap(Client* c)
 
 void Game::OnRequestLoadMap(Client * c)
 {
+	if (m_GameState > Load)
+	{
+		c->BeginWrite();
+		c->WriteByte(SM_GAME_STATE_ERROR);
+		c->WriteByte(m_GameState);
+		c->EndWrite();
+		return;
+		
+	}
 	m_GameState = Load;
 	char map_name[256] = { 0 };
 	c->ReadString(map_name, 256);
@@ -414,6 +429,15 @@ void Game::OnClientMapLoaded(Client * c)
 		Client* other = pool_begin + i;
 		if (other->IsValid() && !other->m_MapLoaded)return;
 	}
+	m_GameState = Show;
+	m_GameShowTime = gConfig.m_GameShowTime;
+
+	
+}
+
+void Game::StartGame()
+{
+	if (m_GameState != Show)return;
 	m_GameState = Play;
 	m_GameTotleTime = gConfig.m_GameTime;
 	m_GameSyncTime = 0;
@@ -423,10 +447,11 @@ void Game::OnClientMapLoaded(Client * c)
 	m_RoadCheckerManager.Init();
 	uint players[10] = { 0 };
 	Core::byte count = 0;
+	Client* pool_begin = gServer.m_ClientPool.Begin();
 	for (int i = 0; i < gServer.m_ClientPool.Size(); i++)
 	{
 		Client* other = pool_begin + i;
-		if (other->IsValid()&&!other->m_IsObClient)
+		if (other->IsValid() && !other->m_IsObClient)
 		{
 			players[count] = other->uid;
 			count++;
@@ -443,7 +468,7 @@ void Game::OnClientMapLoaded(Client * c)
 	}
 	for (int i = 0; i < gServer.m_ClientPool.Size(); i++)
 	{
-		Client* c = pool_begin +i;
+		Client* c = pool_begin + i;
 		if (c->IsValid())
 		{
 			c->BeginWrite();
@@ -460,7 +485,7 @@ void Game::OnClientMapLoaded(Client * c)
 			c->WriteFloat(m_GameTotleTime);
 			c->EndWrite();
 		}
-		
+
 	}
 }
 

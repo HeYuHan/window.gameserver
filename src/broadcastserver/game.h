@@ -20,7 +20,8 @@ enum GAME_SEVER_MESSAGE
 	SM_GAME_SYNC_TIME,
 	SM_CREATE_DROP_ITEM,
 	SM_REMOVE_DROP_ITEM,
-	SM_PLSYER_RUN_DIR_ERROR
+	SM_PLSYER_RUN_DIR_ERROR,
+	SM_GAME_STATE_ERROR,
 	
 };
 enum GAME_CLIENT_MESSAGE
@@ -48,7 +49,7 @@ enum PLYAER_MOVE_FLAG
 
 enum GameState
 {
-	None, Wait,Load,Play, Balance
+	None, Wait,Load,Play, Balance,Show
 };
 
 class Client;
@@ -71,6 +72,7 @@ private:
 	void OnRequestSelectMap(Client* c);
 	void OnRequestLoadMap(Client* c);
 	void OnClientMapLoaded(Client* c);
+	void StartGame();
 	void SyncGameTime();
 private:
 	GameState m_GameState;
@@ -79,6 +81,7 @@ private:
 	char m_MapData[MAX_MAP_DATA_LEN];
 	float m_GameTotleTime;
 	float m_GameSyncTime;
+	float m_GameShowTime;
 	float m_GameRunTime;
 	DropItemManager m_DropManager;
 	RaceRoadCheckerManager m_RoadCheckerManager;
