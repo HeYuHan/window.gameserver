@@ -36,6 +36,9 @@
     <ClCompile Include="..\src\broadcastserver\RaceRoadChecker.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\broadcastserver\serverstate.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\broadcastserver\server.h">
@@ -54,6 +57,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="..\src\broadcastserver\RaceRoadChecker.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\broadcastserver\serverstate.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

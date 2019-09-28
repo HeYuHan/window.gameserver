@@ -135,6 +135,7 @@
     <ClCompile Include="..\src\broadcastserver\main.cpp" />
     <ClCompile Include="..\src\broadcastserver\RaceRoadChecker.cpp" />
     <ClCompile Include="..\src\broadcastserver\server.cpp" />
+    <ClCompile Include="..\src\broadcastserver\serverstate.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\broadcastserver\client.h" />
@@ -143,6 +144,7 @@
     <ClInclude Include="..\src\broadcastserver\game_config.h" />
     <ClInclude Include="..\src\broadcastserver\RaceRoadChecker.h" />
     <ClInclude Include="..\src\broadcastserver\server.h" />
+    <ClInclude Include="..\src\broadcastserver\serverstate.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

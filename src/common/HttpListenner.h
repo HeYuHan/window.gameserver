@@ -35,6 +35,7 @@ public:
 	bool CreateHttpServer(const char* addr,int listen_count,int thread_count);
 	void StopServer();
 	void OnRequest(HttpTask *task);
+	virtual void OnPut(HttpTask *task, const char* path, const char* query, struct evbuffer *buffer) = 0;
 	virtual void OnGet(HttpTask *task,const char* path,const char* query)=0;
 	virtual void OnPost(HttpTask *task, const char* path, const char* query, struct evbuffer *buffer)=0;
 	static int ReadData(struct evhttp_request *req,char* input, int size);
