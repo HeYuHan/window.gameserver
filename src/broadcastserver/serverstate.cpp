@@ -30,7 +30,7 @@ void ServerState::OnGet(HttpTask * task, const char * path, const char * query)
 	std::string requt_path(path);
 	if (requt_path.find("/getfile") == 0)
 	{
-		std::string path = requt_path.substr(8);
+		std::string path = requt_path.substr(9);
 		if (path.empty())
 		{
 			HttpListenner::EndWrite(task->request, HTTP_OK, "ARG ERROR");
@@ -143,24 +143,34 @@ void ServerState::OnPut(HttpTask * task, const char * path, const char * query, 
 			}
 			
 		}
-		evbuffer_iovec io;
-		int len = evbuffer_peek(buffer, -1, NULL, &io, 1);
-		if (len == 0 || io.iov_len == 0)
-		{
-			HttpListenner::EndWrite(task->request, HTTP_OK, "FILE SIZE IS ZERO");
-			return;
-		}
-		FILE *fd = fopen(path.substr(1).c_str(), "w");
+
+		FILE *fd = fopen(path.substr(1).c_str(), "wb+");
 		if (fd == NULL)
 		{
 			log_info("cant open file %s", path.c_str());
 			HttpListenner::EndWrite(task->request, HTTP_OK, "WRITE ERROR");
 			return;
 		}
-		fwrite(io.iov_base, sizeof(char), io.iov_len, fd);
+
+		const int read_buf_size = 1024 * 10;
+		char read_buf[read_buf_size];
+		int read_size = 0;
+		int write_size = 0;
+		do
+		{
+			read_size = evbuffer_remove(buffer, read_buf, read_buf_size);
+			if (read_size > 0)
+			{
+				fwrite(read_buf, sizeof(char), read_size, fd);
+				write_size += read_size;
+			}
+
+		} while (read_size > 0);
+
+
 		std::fclose(fd);
 		char ret[128] = { 0 };
-		sprintf(ret, "write path: %s size %d", path.c_str(), io.iov_len);
+		sprintf(ret, "write path: %s size %d", path.c_str(), write_size);
 		log_info(ret);
 		HttpListenner::EndWrite(task->request, HTTP_OK, ret);
 	}
