@@ -31,7 +31,13 @@ void Client::OnMessage()
 
 void Client::OnConnected()
 {
-	m_UserInfo = Core::LocalUserDatabaseHelper::SampleUser();
+	//m_UserInfo = Core::LocalUserDatabaseHelper::SampleUser();
+	m_UserHeadImgUrl = std::string();
+	m_UserName = std::string();
+	m_UserOpenId = std::string();
+	m_CarData = std::string();
+	m_SetUserInfo = false;
+
 	Reset();
 	m_RevciveUID = false;
 	connection->Send(&uid,sizeof(Core::uint));
@@ -42,7 +48,11 @@ void Client::OnConnected()
 
 void Client::OnDisconnected()
 {
-	gGame.OnClientDisconnect(this);
+	if (IsValid())
+	{
+		gGame.OnClientDisconnect(this);
+	}
+	
 	gServer.m_ClientPool.Free(uid);
 	this->connection = NULL;
 }
@@ -54,7 +64,7 @@ uint64_t Client::GetGUID()
 
 bool Client::IsValid()
 {
-	return connection != NULL && (!m_UserInfo.m_Account.empty() || m_IsObClient);
+	return connection != NULL && (m_SetUserInfo || m_IsObClient);
 }
 
 

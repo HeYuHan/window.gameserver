@@ -9,15 +9,16 @@ void GameConfig::AddBrithPose(float px,float py, float pz, float rx, float ry, f
 	m_BrithPoseCount++;
 }
 
-void GameConfig::AddDropItemPosition(int type, float px, float py, float pz)
+void GameConfig::AddDropItemPosition(int type, int subType,float px, float py, float pz)
 {
 	if (type > DROPITEM_SET_NONE && type < DROPITEM_COUNT)
 	{
 		int &dropCount = m_DropItemPositionCount[type];
-		Vector3 &p = m_DropItemPositionArray[type][dropCount];
-		p.x = px;
-		p.y = py;
-		p.z = pz;
+		DropItemPosition &p = m_DropItemPositionArray[type][dropCount];
+		p.pos.x = px;
+		p.pos.y = py;
+		p.pos.z = pz;
+		p.index = subType;
 		dropCount++;
 	}
 }
@@ -126,7 +127,7 @@ bool GameConfig::CopyAllDropItemData(DropItemData *dest, int &count)
 	return true;
 }
 
-bool GameConfig::CopyDropItemPosition(int type, int index, Vector3 & p)
+bool GameConfig::CopyDropItemPosition(int type, int index, DropItemPosition & p)
 {
 	if (type >DROPITEM_SET_NONE && type < DROPITEM_COUNT)
 	{

@@ -39,6 +39,9 @@ void Game::OnClientMessage(Client * c)
 	case CM_GAME_MAP_LOADED:
 		OnClientMapLoaded(c);
 		break;
+	case CM_COMMIT_SCORE:
+		OnClientCommitSocre(c);
+		break;
 	default:
 		break;
 	}
@@ -64,73 +67,24 @@ void Game::OnBroadcastAvatarData(Client * c)
 	
 	int data_size = c->read_end - c->read_position;
 	char* data_start = c->read_position;
-	c->ReadString(c->m_UserInfo.m_Account);
-	c->ReadString(c->m_UserInfo.m_Name);
-	c->ReadString(c->m_UserInfo.m_UserData);
-	c->m_UserInfo.m_Password = "empty";
+	c->m_SetUserInfo = true;
+	c->ReadString(c->m_UserOpenId);
+	c->ReadString(c->m_UserName);
+	c->ReadString(c->m_UserHeadImgUrl);
+	c->ReadString(c->m_CarData);
 	c->m_DBCoinCount = 0;
 	c->m_DBCompleteTime = 0.0f;
-	log_info("%s join game", c->m_UserInfo.m_Account.c_str());
-	User temp = c->m_UserInfo;
-	if (0 != gServer.m_LocalDBHelper.GetUserByAccount(temp))
-	{
-		Json::Reader reader;
-		Json::Value root;
-		reader.parse(c->m_UserInfo.m_UserData, root);
-		root["score"] = 0;
-		root["time"] = 0.0f;
-		Json::FastWriter writer;
-		c->m_UserInfo.m_UserData = writer.write(root);
-		gServer.m_LocalDBHelper.AddUser(c->m_UserInfo);
-	}
-	else
-	{
-		c->m_UserInfo.m_ID = temp.m_ID;
-		Json::Reader reader;
-		Json::Value root;
-		reader.parse(temp.m_UserData, root);
-		if (!root["score"].isNull())
-		{
-			c->m_DBCoinCount = root["score"].asInt();
-		}
-		if (!root["time"].isNull())
-		{
-			c->m_DBCompleteTime = root["time"].asFloat();
-		}
-		reader = Json::Reader();
-		root = Json::Value();
-		reader.parse(c->m_UserInfo.m_UserData, root);
-		root["score"] = c->m_DBCoinCount;
-		root["time"] = c->m_DBCompleteTime;
-		Json::FastWriter writer;
-		c->m_UserInfo.m_UserData = writer.write(root);
-		gServer.m_LocalDBHelper.UpdateUser(c->m_UserInfo);
-	}
 	Client* pool_begin = gServer.m_ClientPool.Begin();
 	for (int i = 0; i < gServer.m_ClientPool.Size(); i++)
 	{
 		Client* other = pool_begin + i;
-		if (other->IsValid()&&!other->uid !=c->uid)
+		if (other->IsValid())
 		{
-			if (!c->m_IsObClient)
-			{
-				other->BeginWrite();
-				other->WriteByte(SM_PLAYER_AVATAR_DATA);
-				other->WriteUInt(c->uid);
-				other->WriteData(data_start, data_size);
-				other->EndWrite();
-			}
-
-			if (!other->m_IsObClient)
-			{
-				c->BeginWrite();
-				c->WriteByte(SM_PLAYER_AVATAR_DATA);
-				c->WriteUInt(other->uid);
-				c->WriteString(other->m_UserInfo.m_Account.c_str());
-				c->WriteString(other->m_UserInfo.m_Name.c_str());
-				c->WriteString(other->m_UserInfo.m_UserData.c_str());
-				c->EndWrite();
-			}
+			other->BeginWrite();
+			other->WriteByte(SM_PLAYER_AVATAR_DATA);
+			other->WriteUInt(c->uid);
+			other->WriteData(data_start, data_size);
+			other->EndWrite();
 
 
 		}
@@ -271,7 +225,7 @@ void Game::EndGame()
 
 void Game::Update(float t)
 {
-	if (m_GameState == Balance)
+	if (m_GameState == SyncScore)
 	{
 		m_GameRunTime += t;
 		if (m_GameRunTime > m_GameTotleTime + gConfig.m_GameBalanceTime)
@@ -303,62 +257,27 @@ void Game::BalanceGame()
 	if (m_GameState != Play)return;
 	m_GameState = Balance;
 	log_info("balance game");
+	Client* set[10] = {0};
+	int count = 0;
 	Client* pool_begin = gServer.m_ClientPool.Begin();
 	for (int i = 0; i < gServer.m_ClientPool.Size(); i++)
 	{
 		Client* other = pool_begin + i;
-		if (other->IsValid())
+		
+		if (other->IsValid()&&!other->m_IsObClient)
 		{
-			if (!other->m_IsObClient)
-			{
-				Json::Reader reader;
-				Json::Value root;
-				reader.parse(other->m_UserInfo.m_UserData, root);
-				//if (other->m_CoinCount > other->m_DBCoinCount)
-				{
-					
-					root["score"] = other->m_CoinCount;
-					
-				}
-				//if (other->m_Complete && m_GameRunTime < other->m_DBCompleteTime)
-				{
-					root["time"] = other->m_Complete?m_GameRunTime:-1.0f;
-				}
-				Json::FastWriter writer;
-				other->m_UserInfo.m_UserData = writer.write(root);
-				gServer.m_LocalDBHelper.UpdateUser(other->m_UserInfo);
-			}
-
+			set[count++] = other;
 		}
 	}
-	std::vector<User> db_users;
-	gServer.m_LocalDBHelper.GetAllUser(db_users);
-	for (int i = 0; i < gServer.m_ClientPool.Size(); i++)
+	for (int i = 0; i < count; i++)
 	{
-		Client* other = pool_begin + i;
-		if (other->IsValid())
-		{
-			other->BeginWrite();
-			other->WriteByte(SM_GAME_BALANCE);
-
-			if (!other->m_IsObClient)
-			{
-				other->WriteInt(other->m_CoinCount);
-				//other->WriteInt(other->m_DBCoinCount);
-				other->WriteFloat(other->m_Complete ? m_GameRunTime : -1.0f);
-			}
-			Core::byte count = MIN(db_users.size(), 10);
-			other->WriteByte(count);
-			for (int j = 0; j < count; j++)
-			{
-				other->WriteString(db_users[j].m_Account.c_str());
-				other->WriteString(db_users[j].m_Name.c_str());
-				other->WriteString(db_users[j].m_UserData.c_str());
-
-			}
-			other->EndWrite();
-
-		}
+		Client* other = set[i];
+		other->m_CommitScore = false;
+		other->BeginWrite();
+		other->WriteByte(SM_GAME_BALANCE);
+		other->WriteInt(other->m_CoinCount);
+		other->WriteFloat(other->m_Complete ? m_GameRunTime : -1.0f);
+		other->EndWrite();
 	}
 }
 
@@ -525,6 +444,36 @@ void Game::SyncGameTime()
 	}
 }
 
+void Game::OnClientCommitSocre(Client * c)
+{
+	if (m_GameState != Balance)return;
+	c->m_CommitScore = true;
+	char* start = c->read_position;
+	int size = c->read_end - c->read_position;
+	Client* pool_begin = gServer.m_ClientPool.Begin();
+	/*for (int i = 0; i < gServer.m_ClientPool.Size(); i++)
+	{
+		Client* other = pool_begin + i;
+		if (other->IsValid()&&!other->m_IsObClient&&!other->m_CommitScore)
+		{
+			return;
+		}
+	}*/
+	m_GameState = SyncScore;
+	for (int i = 0; i < gServer.m_ClientPool.Size(); i++)
+	{
+		Client* other = pool_begin + i;
+		if (other->IsValid())
+		{
+			other->BeginWrite();
+			other->WriteByte(SM_SYNC_RANK_SCORE);
+			other->WriteData(start, size);
+			other->EndWrite();
+			return;
+		}
+	}
+}
+
 void Game::OnDropItemEvent(DropItemEvent event, AliveDroptItem item, void * arg)
 {
 	if (event == DropItemEvent::DROP_EVENT_CREATE)
@@ -539,21 +488,36 @@ void Game::OnDropItemEvent(DropItemEvent event, AliveDroptItem item, void * arg)
 				other->WriteByte(SM_CREATE_DROP_ITEM);
 				other->WriteUInt(item.mID);
 				other->WriteByte(gConfig.m_DropItemData[item.mIndex].mType);
-				other->WriteVector3(item.mPosition);
+				other->WriteInt(item.mPosition.index);
+				other->WriteVector3(item.mPosition.pos);
 				other->EndWrite();
+				log_info("creat drop item %d %d", gConfig.m_DropItemData[item.mIndex].mType, item.mPosition.index);
 			}
 		}
 	}
 	else if (event == DropItemEvent::DROP_EVENT_GET)
 	{
+		
 		Core::uint get_uid = 0;
 		Core::uint get_count = 0;
 		Client* get_client = gServer.m_ClientPool.Get((Core::uint)arg);
 		if (get_client&&get_client->IsValid())
 		{
 			get_uid = get_client->uid;
-			get_client->m_CoinCount++;
-			get_count = get_client->m_CoinCount;
+			if (gConfig.m_DropItemData[item.mIndex].mType == DROPITEM_ICON)
+			{
+				get_client->m_CoinCount++;
+				get_count = get_client->m_CoinCount;
+				log_info("eat coin");
+			}
+			else
+			{
+				get_client->m_CoinCount--;
+				get_client->m_CoinCount = MAX(get_client->m_CoinCount, 0);
+				get_count = get_client->m_CoinCount;
+				log_info("eat OBSTACLE");
+			}
+			
 		}
 		Client* pool_begin = gServer.m_ClientPool.Begin();
 		for (int i = 0; i < gServer.m_ClientPool.Size(); i++)

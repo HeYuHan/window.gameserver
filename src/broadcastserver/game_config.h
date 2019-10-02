@@ -19,12 +19,13 @@ struct BrithPose
 };
 
 
+
 class GameConfig
 {
 
 private:
 	void AddBrithPose(float px, float py, float pz, float rx, float ry, float rz);
-	void AddDropItemPosition(int type, float px, float py, float pz);
+	void AddDropItemPosition(int type,int subType, float px, float py, float pz);
 	void AddCheckPoint(int index, float r, float px, float py, float pz, bool end);
 	DropItemData* AddDropItem();
 public:
@@ -32,7 +33,7 @@ public:
 public:
 	bool CopyBrithPose(int index,BrithPose &p);
 	bool CopyAllDropItemData(DropItemData *dest,int &count);
-	bool CopyDropItemPosition(int type, int index, Vector3 &p);
+	bool CopyDropItemPosition(int type, int index, DropItemPosition &p);
 	bool CopyCheckPointData(CheckerPoint* dest, int &size);
 public:
 	float m_GameTime;
@@ -47,7 +48,7 @@ public:
 	DropItemData m_DropItemData[MAX_DROP_COUNT];
 	BrithPose m_BrithPoseArray[MAX_BRITH_POS_COUNT];
 	CheckerPoint m_CheckerPointArray[MAX_CHECK_POINT_COUNT];
-	Vector3 m_DropItemPositionArray[DROPITEM_COUNT][MAX_DORPITME_POS_COUNT];
+	DropItemPosition m_DropItemPositionArray[DROPITEM_COUNT][MAX_DORPITME_POS_COUNT];
 	int m_DropItemPositionCount[DROPITEM_COUNT];
 
 };

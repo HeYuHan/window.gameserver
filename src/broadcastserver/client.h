@@ -46,9 +46,15 @@ public:
 	Core::byte m_ConnectionType;
 	TcpImp m_TcpConnection;
 	UdpImp m_UdpConnection;
-	Core::LocalUserDatabaseHelper::SampleUser m_UserInfo;
+	std::string m_UserOpenId;
+	std::string m_UserName;
+	std::string m_UserHeadImgUrl;
+	std::string m_CarData;
+	bool m_SetUserInfo;
+	//Core::LocalUserDatabaseHelper::SampleUser m_UserInfo;
 	float m_Heart;
 	bool m_IsObClient;
+	bool m_CommitScore;
 	bool m_MapLoaded;
 	bool m_RevciveUID;
 	bool m_Complete;

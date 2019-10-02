@@ -43,7 +43,7 @@ if config_path ~= nil then
 end
 
 --设置金币点
-config_path = AutoPath('coin.json')
+config_path = AutoPath('drop_coin.json')
 log_info(config_path)
 if config_path ~= nil then
     local f = assert(io.open(config_path, 'r'))
@@ -60,7 +60,30 @@ if config_path ~= nil then
         drop.mCheckRange = 10
         for i = 1, len do
             local data = array[i]
-            config:AddDropItemPosition(1,data.pos.x, data.pos.y, data.pos.z)
+            config:AddDropItemPosition(1,1,data.pos.x, data.pos.y, data.pos.z)
+        end
+    end
+end
+
+--设置障碍物点
+config_path = AutoPath('drop_obstacle.json')
+log_info(config_path)
+if config_path ~= nil then
+    local f = assert(io.open(config_path, 'r'))
+    if f then
+        local str = f:read('*all')
+        f:close()
+        local check_data = cjson.decode(str)
+        local array = check_data.data
+        local len = #array
+        local drop = config:AddDropItem()
+        drop.mType = 3
+        drop.mMaxCount = 0
+        drop.mInitCount = len
+        drop.mCheckRange = 10
+        for i = 1, len do
+            local data = array[i]
+            config:AddDropItemPosition(3,data.index,data.pos.x, data.pos.y, data.pos.z)
         end
     end
 end

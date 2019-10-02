@@ -65,7 +65,7 @@ void DropItemManager::GetDropItem(Vector3 &pos, unsigned int uid)
 	{
 		AliveDroptItem* item = &m_AliveDropItem[i];
 		DropItem* origin = &mAllDropItem[item->mIndex];
-		Vector3 itemPos=item->mPosition;
+		Vector3 itemPos=item->mPosition.pos;
 		
 		float dis = Length(itemPos - pos);
 		if (dis < origin->mData.mCheckRange)

@@ -31,7 +31,7 @@ private:
 	virtual void OnTcpAccept(evutil_socket_t socket, sockaddr *) override;
 
 public:
-	Core::LocalUserDatabaseHelper m_LocalDBHelper;
+	//Core::LocalUserDatabaseHelper m_LocalDBHelper;
 	Core::ObjectPool<Client> m_ClientPool;
 	const char* m_TcpAddr;
 	const char* m_UdpAddr;

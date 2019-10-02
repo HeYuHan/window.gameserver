@@ -18,6 +18,11 @@ enum DropItemType
 	DROPITEM_COUNT = 6
 
 };
+struct DropItemPosition
+{
+	int index;
+	Vector3 pos;
+};
 struct DropItemData
 {
 	int mInitCount;
@@ -39,7 +44,7 @@ struct DropItem
 struct AliveDroptItem
 {
 	unsigned int mID;
-	Vector3 mPosition;
+	DropItemPosition mPosition;
 	int mIndex;
 };
 enum DropItemEvent

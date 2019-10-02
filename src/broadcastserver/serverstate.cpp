@@ -12,6 +12,7 @@
 #include <fstream>
 #include <sstream>
 #include <io.h>
+#include "game.h"
 ServerState gServerState;
 USING_NS_CORE;
 void ResponseJson(HttpTask * task, Json::Value &ret);
@@ -61,6 +62,12 @@ void ServerState::OnGet(HttpTask * task, const char * path, const char * query)
 		HttpListenner::EndWrite(task->request, HTTP_OK, "ok");
 		//bool is_jpeg = path.find(".jpg") != std::string::npos;
 		
+	}
+	else if (requt_path.find("/getstate") == 0)
+	{
+		char msg[128] = { 0 };
+		sprintf(msg, "%d", gGame.m_GameState);
+		Response(task, msg);
 	}
 	else
 	{

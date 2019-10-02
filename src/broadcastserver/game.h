@@ -22,16 +22,18 @@ enum GAME_SEVER_MESSAGE
 	SM_REMOVE_DROP_ITEM,
 	SM_PLSYER_RUN_DIR_ERROR,
 	SM_GAME_STATE_ERROR,
+	SM_SYNC_RANK_SCORE
 	
 };
 enum GAME_CLIENT_MESSAGE
 {
-	CM_REQUEST_LOAD_MAP=1,
+	CM_REQUEST_LOAD_MAP = 1,
 	CM_GAME_MAP_LOADED,
 	CM_PLAYER_MOVE,
 	CM_OB_PLAYER_JOIN,
 	CM_PLAYER_AVATAR_DATA,
-	CM_SELECT_GAME_MAP
+	CM_SELECT_GAME_MAP,
+	CM_COMMIT_SCORE,
 
 };
 
@@ -49,7 +51,7 @@ enum PLYAER_MOVE_FLAG
 
 enum GameState
 {
-	None, Wait,Load,Play, Balance,Show
+	None, Wait,Load,Play, Balance,SyncScore,Show
 };
 
 class Client;
@@ -74,8 +76,11 @@ private:
 	void OnClientMapLoaded(Client* c);
 	void StartGame();
 	void SyncGameTime();
-private:
+	void OnClientCommitSocre(Client* c);
+public:
 	GameState m_GameState;
+private:
+	
 	int m_MapDataLen;
 	int m_BrithIndex;
 	char m_MapData[MAX_MAP_DATA_LEN];
