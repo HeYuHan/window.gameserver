@@ -52,7 +52,7 @@ void Client::OnDisconnected()
 	{
 		gGame.OnClientDisconnect(this);
 	}
-	
+	log_info("client disconnect %d is ob %d", uid, m_IsObClient);
 	gServer.m_ClientPool.Free(uid);
 	this->connection = NULL;
 }

@@ -236,7 +236,7 @@ void Game::Update(float t)
 	else if (m_GameState == Show)
 	{
 		m_GameShowTime -= t;
-		if (m_GameShowTime < 0)StartGame();
+		if (m_GameShowTime < 0)m_GameState = Play;
 	}
 	if (m_GameState != Play)return;
 	m_GameRunTime += t;
@@ -348,17 +348,16 @@ void Game::OnClientMapLoaded(Client * c)
 		Client* other = pool_begin + i;
 		if (other->IsValid() && !other->m_MapLoaded)return;
 	}
-	m_GameState = Show;
-	m_GameShowTime = gConfig.m_GameShowTime;
-
+	StartGame();
 	
 }
 
 void Game::StartGame()
 {
-	if (m_GameState != Show)return;
-	m_GameState = Play;
+	if (m_GameState != Load)return;
+	m_GameState = Show;
 	m_GameTotleTime = gConfig.m_GameTime;
+	m_GameShowTime = gConfig.m_GameShowTime;
 	m_GameSyncTime = 0;
 	m_GameRunTime = 0;
 	m_BrithIndex = 0;
@@ -401,7 +400,9 @@ void Game::StartGame()
 				c->WriteVector3(other->m_Rotation);
 
 			}
+			
 			c->WriteFloat(m_GameTotleTime);
+			c->WriteFloat(m_GameShowTime);
 			c->EndWrite();
 		}
 
@@ -469,7 +470,6 @@ void Game::OnClientCommitSocre(Client * c)
 			other->WriteByte(SM_SYNC_RANK_SCORE);
 			other->WriteData(start, size);
 			other->EndWrite();
-			return;
 		}
 	}
 }

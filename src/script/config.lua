@@ -1,6 +1,7 @@
 local config = gConfig()
-config.GameTime = 180
+config.GameTime = 10
 config.GameBalanceTime=10
+config.GameShowTime = 7.5
 
 
 
@@ -57,7 +58,7 @@ if config_path ~= nil then
         drop.mType = 1
         drop.mMaxCount = 0
         drop.mInitCount = len
-        drop.mCheckRange = 10
+        drop.mCheckRange = 2
         for i = 1, len do
             local data = array[i]
             config:AddDropItemPosition(1,1,data.pos.x, data.pos.y, data.pos.z)
