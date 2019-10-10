@@ -1,6 +1,7 @@
 local config = gConfig()
 config.GameTime = 10
 config.GameBalanceTime=10
+config.GameBalanceTimeForPad=10
 config.GameShowTime = 7.5
 
 

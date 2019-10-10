@@ -468,6 +468,8 @@ void Game::OnClientCommitSocre(Client * c)
 		{
 			other->BeginWrite();
 			other->WriteByte(SM_SYNC_RANK_SCORE);
+			other->WriteFloat(gConfig.m_GameBalanceTime);
+			other->WriteFloat(gConfig.m_GameBalanceTimeForPad);
 			other->WriteData(start, size);
 			other->EndWrite();
 		}

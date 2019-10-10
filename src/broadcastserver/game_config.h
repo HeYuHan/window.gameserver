@@ -38,7 +38,9 @@ public:
 public:
 	float m_GameTime;
 	float m_GameBalanceTime;
+	float m_GameBalanceTimeForPad;
 	float m_GameShowTime;
+	
 	int m_TotalCircle;
 	int m_DropItemCount;
 	int m_BrithPoseCount;
