@@ -287,6 +287,7 @@ bool Server::Init()
 					}
 				}
 				sprintf(process_path,"%s -RunWithServer -PortTcp=%d -PortUdp=%d -PortHttp=%d %s", gConfig.m_ClientPath, port_tcp, prot_udp,gConfig.m_ClientExeArg);
+				log_info("start client %s", process_path);
 				STARTUPINFO start_info;
 				PROCESS_INFORMATION process_info;
 				ZeroMemory(&start_info, sizeof(start_info));

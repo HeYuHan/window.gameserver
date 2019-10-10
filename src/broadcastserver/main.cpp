@@ -2,7 +2,11 @@
 #include <tools.h>
 #include <log.h>
 #include "server.h"
-//#pragma comment( linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"" )
+#ifndef _DEBUG
+#pragma comment( linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"" )
+#endif // DEBUG
+
+//
 enum
 {
 	addr_udp = 0x100,
@@ -38,6 +42,12 @@ int main(int argc, char **args) {
 	gServer.m_UdpPwd = "broadserver";
 	gServer.m_HeartTime = 5;
 	gServer.m_MaxClient = 2;
+#ifndef _DEBUG
+	gLogger.m_LogToFile = true;
+	gLogger.m_LogToConsole = false;
+	gLogger.logName = "broadserver";
+	gLogger.filePath = "./";
+#endif
 	while (1)
 	{
 		int option_index = 0;
