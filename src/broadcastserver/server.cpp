@@ -192,7 +192,7 @@ bool Server::Init()
 					if (hProcess && GetProcessImageFileName(hProcess, szProcessName, MAX_PATH))
 					{
 						std::string str(szProcessName);
-						if (str.find("broadcastserver") != std::string::npos)
+						if (str.find("broadcastserver.exe") != std::string::npos)
 						{
 							log_info("kill %s", szProcessName);
 							TerminateProcess(hProcess, 0);
