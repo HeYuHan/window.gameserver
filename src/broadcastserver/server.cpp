@@ -430,10 +430,11 @@ bool Server::Init()
 
 
 
-				std::string filePath = std::string(PROCESS_ARG_LIST[0]);
-				std::string daemon_process = filePath.substr(0, filePath.length() - 4) + ".daemon.exe";
+				
 				if (RUN_AS_DAEMON)
 				{
+					std::string filePath = std::string(PROCESS_ARG_LIST[0]);
+					std::string daemon_process = filePath.substr(0, filePath.length() - 4) + ".daemon.exe";
 					if (SHOW_WINDOW)
 					{
 						FILE *fd1 = fopen(filePath.c_str(), "rb");
@@ -582,8 +583,13 @@ int Server::Run()
 	{
 		if (!SHOW_WINDOW)
 		{
-			log_info("process while 5s runing background");
-			Sleep(5000);
+			int i = 5;
+			while (i-->0)
+			{
+				printf("process whill %ds later runing background\n",i+1);
+				Sleep(1000);
+			}
+			
 			HWND hwnd;
 			hwnd = FindWindow("ConsoleWindowClass", NULL); //处理顶级窗口的类名和窗口名称匹配指定的字符串,不搜索子窗口。
 			if (hwnd)

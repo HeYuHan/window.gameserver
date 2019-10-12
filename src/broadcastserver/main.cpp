@@ -116,6 +116,13 @@ int main(int argc, char **args) {
 	}
 	SHOW_WINDOW = show_window;
 	RUN_AS_DAEMON = as_daemon;
+	if (!SHOW_WINDOW)
+	{
+		gLogger.m_LogToFile = true;
+		gLogger.m_LogToConsole = true;
+		gLogger.logName = "broadserver";
+		gLogger.filePath = "./";
+	}
 	if (as_daemon && !RunAsDaemon())
 	{
 		log_error("%s", "run as daemon error!");
