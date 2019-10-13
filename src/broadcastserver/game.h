@@ -22,7 +22,8 @@ enum GAME_SEVER_MESSAGE
 	SM_REMOVE_DROP_ITEM,
 	SM_PLSYER_RUN_DIR_ERROR,
 	SM_GAME_STATE_ERROR,
-	SM_SYNC_RANK_SCORE
+	SM_SYNC_RANK_SCORE,
+	
 	
 };
 enum GAME_CLIENT_MESSAGE
@@ -34,6 +35,7 @@ enum GAME_CLIENT_MESSAGE
 	CM_PLAYER_AVATAR_DATA,
 	CM_SELECT_GAME_MAP,
 	CM_COMMIT_SCORE,
+	CM_STOP_GAME
 
 };
 
@@ -65,6 +67,7 @@ public:
 	void OnClientDisconnect(Client* c);
 	void OnBroadcastAvatarData(Client* c);
 	void OnPlayerMove(Client* c);
+	void OnPlayerStopGame(Client* c);
 	void ClearData();
 	void EndGame();
 	void Update(float t);
@@ -88,6 +91,7 @@ private:
 	float m_GameSyncTime;
 	float m_GameShowTime;
 	float m_GameRunTime;
+	float m_RestartTimer;
 	DropItemManager m_DropManager;
 	RaceRoadCheckerManager m_RoadCheckerManager;
 

@@ -417,7 +417,7 @@ bool Server::Init()
 							CloseHandle(hProcess);
 							//break;
 						}
-						else if (gConfig.m_ClientPath && str.find(gConfig.m_ClientPath) != std::string::npos)
+						else if (!gConfig.m_ClientPath.empty() && str.find(gConfig.m_ClientPath) != std::string::npos)
 						{
 							log_info("kill %s", szProcessName);
 							TerminateProcess(hProcess, 0);
@@ -520,7 +520,7 @@ bool Server::Init()
 			m_UpdateTimer.Init(0, ServerUpdate, NULL, true);
 			m_UpdateTimer.Begin();
 			
-			if (gConfig.m_ClientPath > 0)
+			if (!gConfig.m_ClientPath.empty())
 			{
 				char process_path[MAX_PATH] = { 0 };
 				int port_tcp = -1;
@@ -559,7 +559,7 @@ bool Server::Init()
 						prot_http = atoi(port_start + 1);
 					}
 				}
-				sprintf(process_path,"%s -RunWithServer -PortTcp=%d -PortUdp=%d -PortHttp=%d %s", gConfig.m_ClientPath, port_tcp, prot_udp,gConfig.m_ClientExeArg);
+				sprintf(process_path,"%s -RunWithServer -PortTcp=%d -PortUdp=%d -PortHttp=%d %s", gConfig.m_ClientPath.c_str(), port_tcp, prot_udp, prot_http,gConfig.m_ClientExeArg.c_str());
 				log_info("start client %s", process_path);
 				STARTUPINFO start_info;
 				PROCESS_INFORMATION process_info;

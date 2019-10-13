@@ -39,6 +39,7 @@ public:
 	const char* m_HttpAddr;
 	int m_MaxClient;
 	int m_HeartTime;
+	bool m_CheckConnection;
 	virtual bool Init();
 	virtual int Run();
 };

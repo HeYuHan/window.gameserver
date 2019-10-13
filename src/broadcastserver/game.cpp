@@ -42,6 +42,9 @@ void Game::OnClientMessage(Client * c)
 	case CM_COMMIT_SCORE:
 		OnClientCommitSocre(c);
 		break;
+	case CM_STOP_GAME:
+		OnPlayerStopGame(c);
+		break;
 	default:
 		break;
 	}
@@ -196,6 +199,11 @@ void Game::OnPlayerMove(Client* c)
 	}
 }
 
+void Game::OnPlayerStopGame(Client * c)
+{
+	ClearData();
+}
+
 
 void Game::ClearData()
 {
@@ -225,6 +233,19 @@ void Game::EndGame()
 
 void Game::Update(float t)
 {
+	
+	if (gServer.m_CheckConnection && gServer.m_ClientPool.Count() == 0)
+	{
+		m_RestartTimer += t;
+		if (m_RestartTimer > 5)
+		{
+			log_error("server error");
+			HANDLE hProcess = ::OpenProcess(PROCESS_TERMINATE, FALSE, GetCurrentProcessId());
+			::TerminateProcess(hProcess, 0);
+			CloseHandle(hProcess);
+		}
+	}
+
 	if (m_GameState == SyncScore)
 	{
 		m_GameRunTime += t;
@@ -423,7 +444,7 @@ void Game::SyncGameTime()
 			other->EndWrite();
 
 			
-			/*{
+			{
 				float dis = Length(other->m_IdlePostion - other->m_Position);
 				other->m_IdlePostion = other->m_Position;
 				if (dis < 1)
@@ -439,7 +460,7 @@ void Game::SyncGameTime()
 					other->WriteInt(other->m_LastCheckIndex * 100 / gConfig.m_CheckerPointCount);
 					other->EndWrite();
 				}
-			}*/
+			}
 
 		}
 	}

@@ -45,8 +45,8 @@ public:
 	int m_DropItemCount;
 	int m_BrithPoseCount;
 	int m_CheckerPointCount;
-	const char* m_ClientPath;
-	const char* m_ClientExeArg;
+	std::string m_ClientPath;
+	std::string m_ClientExeArg;
 	DropItemData m_DropItemData[MAX_DROP_COUNT];
 	BrithPose m_BrithPoseArray[MAX_BRITH_POS_COUNT];
 	CheckerPoint m_CheckerPointArray[MAX_CHECK_POINT_COUNT];

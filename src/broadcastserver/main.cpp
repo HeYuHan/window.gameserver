@@ -20,7 +20,8 @@ enum
 	log_name,
 	log_path,
 	flag_daemon_process,
-	flag_show_window
+	flag_show_window,
+	flag_check_connection
 };
 
 struct option long_options[] =
@@ -35,7 +36,8 @@ struct option long_options[] =
 	{ "log_name",optional_argument,0,log_name },
 	{ "log_path",optional_argument,0,log_path },
 	{ "daemon_process",optional_argument,0,flag_daemon_process },
-	{"windowed",optional_argument,0,flag_show_window }
+	{"windowed",optional_argument,0,flag_show_window },
+	{"checkconnection",optional_argument,0,flag_check_connection }
 };
 
 int PROCESS_ARG_COUNT;
@@ -62,6 +64,7 @@ int main(int argc, char **args) {
 	gServer.m_UdpPwd = "broadserver";
 	gServer.m_HeartTime = 5;
 	gServer.m_MaxClient = 2;
+	gServer.m_CheckConnection = false;
 //#ifndef _DEBUG
 //	gLogger.m_LogToFile = true;
 //	gLogger.m_LogToConsole = true;
@@ -106,6 +109,9 @@ int main(int argc, char **args) {
 			break;
 		case flag_show_window:
 			show_window = true;
+			break;
+		case flag_check_connection:
+			gServer.m_CheckConnection = true;
 			break;
 		case '?':
 			return 1;

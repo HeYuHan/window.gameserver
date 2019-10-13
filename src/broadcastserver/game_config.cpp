@@ -93,8 +93,8 @@ bool GameConfig::Init()
 	m_BrithPoseCount = 0;
 	m_DropItemCount = 0;
 	m_CheckerPointCount = 0;
-	m_ClientPath = NULL;
-	m_ClientExeArg = NULL;
+	m_ClientPath = std::string();
+	m_ClientExeArg = std::string();
 	const char* auto_path = AutoFilePath("config.lua");
 	if (auto_path)
 	{
