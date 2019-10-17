@@ -45,6 +45,9 @@ void Game::OnClientMessage(Client * c)
 	case CM_STOP_GAME:
 		OnPlayerStopGame(c);
 		break;
+	case CM_GET_DROP_ITEM:
+		OnPlayerGetDropItem(c);
+		break;
 	default:
 		break;
 	}
@@ -111,7 +114,8 @@ void Game::OnPlayerMove(Client* c)
 	{
 		c->ReadVector3(pos);
 		c->m_Position = pos;
-		m_DropManager.GetDropItem(pos, c->uid);
+
+		//m_DropManager.GetDropItem(pos, c->uid);
 
 
 		//ÄæÐÐ¼ì²é
@@ -202,6 +206,46 @@ void Game::OnPlayerMove(Client* c)
 void Game::OnPlayerStopGame(Client * c)
 {
 	ClearData();
+}
+
+void Game::OnPlayerGetDropItem(Client * c)
+{
+	Core::uint id;
+	c->ReadUInt(id);
+	DropItem* item = m_DropManager.GetDropItem(id, true);
+	if (item)
+	{
+		int get_count;
+		if (item->mData.mType == DROPITEM_ICON)
+		{
+			c->m_CoinCount++;
+			get_count = c->m_CoinCount;
+			log_info("eat coin");
+		}
+		else
+		{
+			c->m_CoinCount--;
+			c->m_CoinCount = MAX(c->m_CoinCount, 0);
+			get_count = c->m_CoinCount;
+			log_info("eat OBSTACLE");
+		}
+		Client* pool_begin = gServer.m_ClientPool.Begin();
+		for (int i = 0; i < gServer.m_ClientPool.Size(); i++)
+		{
+			Client* other = pool_begin + i;
+
+			if (other->IsValid())
+			{
+				other->BeginWrite();
+				other->WriteByte(SM_REMOVE_DROP_ITEM);
+				other->WriteUInt(id);
+				other->WriteUInt(c->uid);
+				other->WriteShort(get_count);
+				other->EndWrite();
+			}
+		}
+	}
+
 }
 
 

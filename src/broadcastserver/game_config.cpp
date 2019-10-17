@@ -71,6 +71,7 @@ bool GameConfig::Init()
 		.addFunction("AddDropItem", &GameConfig::AddDropItem)
 		.addData("ClientPath",&GameConfig::m_ClientPath)
 		.addData("ClientArg", &GameConfig::m_ClientExeArg)
+		.addData("ClientConfig", &GameConfig::m_ClientConfig)
 		.addData("GameTime", &GameConfig::m_GameTime)
 		.addData("TotalCircle", &GameConfig::m_TotalCircle)
 		.addData("GameBalanceTime", &GameConfig::m_GameBalanceTime)
@@ -95,6 +96,7 @@ bool GameConfig::Init()
 	m_CheckerPointCount = 0;
 	m_ClientPath = std::string();
 	m_ClientExeArg = std::string();
+	m_ClientConfig = std::string();
 	const char* auto_path = AutoFilePath("config.lua");
 	if (auto_path)
 	{

@@ -1,10 +1,20 @@
+require("client")
 local config = gConfig()
-config.GameTime = 10
-config.GameBalanceTime=10
-config.GameBalanceTimeForPad=10
-config.GameShowTime = 7.5
+--配置pc版本路径后，服务器会自动拉起pc版本进程，并且查杀已运行的进程，建议配置
+--路径为绝对路径或者和服务器同级目录的相对路径
 
 
+config.ClientPath = 'server\\MAXUS_ARMultiplayerCarGame2.exe'
+
+
+config.GameTime = ClientConfig.Server.GameTime
+config.GameBalanceTime=ClientConfig.Server.GameBalanceTime
+config.GameBalanceTimeForPad=ClientConfig.Server.GameBalanceTimeForPad
+config.GameShowTime = ClientConfig.Server.GameShowTime
+local client_config = {
+    Lobby=ClientConfig.Lobby,Ingame=ClientConfig.Ingame
+}
+config.ClientConfig=cjson.encode(client_config)
 
 
 

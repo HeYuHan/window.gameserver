@@ -13,6 +13,7 @@
 #include <sstream>
 #include <io.h>
 #include "game.h"
+#include "game_config.h"
 ServerState gServerState;
 USING_NS_CORE;
 void ResponseJson(HttpTask * task, Json::Value &ret);
@@ -29,6 +30,10 @@ ServerState::~ServerState()
 void ServerState::OnGet(HttpTask * task, const char * path, const char * query)
 {
 	std::string requt_path(path);
+	if (requt_path.find("/getconfig") == 0)
+	{
+		Response(task, gConfig.m_ClientConfig.c_str());
+	}
 	if (requt_path.find("/getfile") == 0)
 	{
 		std::string path = requt_path.substr(9);

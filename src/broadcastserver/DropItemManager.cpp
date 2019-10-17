@@ -96,3 +96,18 @@ void DropItemManager::CreateDropItem(int index)
 	}
 }
 
+DropItem* DropItemManager::GetDropItem(unsigned int id, bool remove)
+{
+	for (int i = m_AliveDropItem.size() - 1; i >= 0; i--)
+	{
+		AliveDroptItem* item = &m_AliveDropItem[i];
+		DropItem* origin = &mAllDropItem[item->mIndex];
+		if (item->mID == id)
+		{
+			if (remove)m_AliveDropItem.erase(m_AliveDropItem.begin() + i);
+			return origin;
+		}
+	}
+	return NULL;
+}
+

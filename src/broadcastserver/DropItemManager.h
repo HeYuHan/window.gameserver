@@ -65,6 +65,7 @@ public:
 	void Update(float t);
 	void GetDropItem(Vector3 &pos,unsigned int uid);
 	void CreateDropItem(int index);
+	DropItem* GetDropItem(unsigned int id,bool remove);
 private:
 	DropItemEventListenner* listenner;
 	unsigned int gID;

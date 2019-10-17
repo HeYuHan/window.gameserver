@@ -35,7 +35,8 @@ enum GAME_CLIENT_MESSAGE
 	CM_PLAYER_AVATAR_DATA,
 	CM_SELECT_GAME_MAP,
 	CM_COMMIT_SCORE,
-	CM_STOP_GAME
+	CM_STOP_GAME,
+	CM_GET_DROP_ITEM,
 
 };
 
@@ -68,6 +69,7 @@ public:
 	void OnBroadcastAvatarData(Client* c);
 	void OnPlayerMove(Client* c);
 	void OnPlayerStopGame(Client* c);
+	void OnPlayerGetDropItem(Client* c);
 	void ClearData();
 	void EndGame();
 	void Update(float t);
