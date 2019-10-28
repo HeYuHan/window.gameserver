@@ -14,8 +14,11 @@
 #include <io.h>
 #include "game.h"
 #include "game_config.h"
+#include <ThreadPool2.h>
 ServerState gServerState;
+
 USING_NS_CORE;
+MutexLock gRequestEnterLock;
 void ResponseJson(HttpTask * task, Json::Value &ret);
 using namespace Core;
 using namespace std;

@@ -153,6 +153,7 @@ void Game::OnPlayerMove(Client* c)
 		if (m_RoadCheckerManager.Check(pos, p))
 		{
 			c->m_LastCheckIndex = p.mIndex;
+			//log_info("index %d", p.mIndex);
 			//碰到最后一个点，检查一圈结束
 			if (p.mEndPoint)
 			{
@@ -341,7 +342,7 @@ void Game::BalanceGame()
 		other->BeginWrite();
 		other->WriteByte(SM_GAME_BALANCE);
 		other->WriteInt(other->m_CoinCount);
-		other->WriteFloat(other->m_Complete ? m_GameRunTime : -1.0f);
+		other->WriteFloat(m_GameRunTime);
 		other->EndWrite();
 	}
 }
@@ -447,6 +448,7 @@ void Game::StartGame()
 			other->m_Position = pose.position;
 			other->m_Rotation = pose.rotation;
 			other->m_IdlePostion = pose.position;
+			other->m_LastCheckIndex = 0;
 		}
 	}
 	for (int i = 0; i < gServer.m_ClientPool.Size(); i++)
@@ -488,7 +490,7 @@ void Game::SyncGameTime()
 			other->EndWrite();
 
 			
-			{
+			if(m_GameSyncTime>5){
 				float dis = Length(other->m_IdlePostion - other->m_Position);
 				other->m_IdlePostion = other->m_Position;
 				if (dis < 1)

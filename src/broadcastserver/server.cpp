@@ -119,6 +119,7 @@ void Server::OnTcpAccept(evutil_socket_t socket, sockaddr *addr)
 	if (!client)
 	{
 		log_error("cant allocate new client pool size:%d", m_ClientPool.Size());
+		evutil_closesocket(socket);
 		return;
 	}
 	client->connection = &client->m_TcpConnection;

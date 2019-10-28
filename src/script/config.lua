@@ -65,6 +65,7 @@ if config_path ~= nil then
         local check_data = cjson.decode(str)
         local array = check_data.data
         local len = #array
+        print('drop coin count:' .. len)
         local drop = config:AddDropItem()
         drop.mType = 1
         drop.mMaxCount = 0
@@ -88,6 +89,7 @@ if config_path ~= nil then
         local check_data = cjson.decode(str)
         local array = check_data.data
         local len = #array
+        print('drop obstacle count:' .. len)
         local drop = config:AddDropItem()
         drop.mType = 3
         drop.mMaxCount = 0

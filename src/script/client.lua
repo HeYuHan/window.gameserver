@@ -4,7 +4,8 @@ ClientConfig={
         --false,正式环境
         IsTest=true,
         --后台token
-        Token='a'
+        Token='a',
+        Url = 'https://c2bt4.maxuscloud.com/'
     },
     Ingame={
         --相机高度
@@ -14,7 +15,7 @@ ClientConfig={
     },
     Server={
         --游戏时间
-        GameTime=1000,
+        GameTime=300,
         --大屏结算返回时间
         GameBalanceTime=10,
         --Pad结算返回时间

@@ -8,7 +8,7 @@
 #include "DropItemManager.h"
 #include "RaceRoadChecker.h"
 #define MAX_BRITH_POS_COUNT 40
-#define MAX_DORPITME_POS_COUNT 50
+#define MAX_DORPITME_POS_COUNT 500
 #define MAX_LEVEL_COUNT  50
 
 
