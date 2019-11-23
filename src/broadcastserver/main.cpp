@@ -63,14 +63,8 @@ int main(int argc, char **args) {
 	gServer.m_UdpAddr = "0.0.0.0:9502";
 	gServer.m_UdpPwd = "broadserver";
 	gServer.m_HeartTime = 5;
-	gServer.m_MaxClient = 2;
+	gServer.m_MaxClient = 10;
 	gServer.m_CheckConnection = false;
-//#ifndef _DEBUG
-//	gLogger.m_LogToFile = true;
-//	gLogger.m_LogToConsole = true;
-//	gLogger.logName = "broadserver";
-//	gLogger.filePath = "./";
-//#endif
 
 	while (1)
 	{

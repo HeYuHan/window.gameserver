@@ -37,11 +37,10 @@ void Client::OnConnected()
 	m_UserOpenId = std::string();
 	m_CarData = std::string();
 	m_SetUserInfo = false;
-
 	Reset();
 	m_RevciveUID = false;
-	connection->Send(&uid,sizeof(Core::uint));
 	m_IsObClient = false;
+	connection->Send(&uid, sizeof(Core::uint));
 
 
 }

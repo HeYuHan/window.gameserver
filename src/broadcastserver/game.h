@@ -10,13 +10,11 @@
 #define MAX_MAP_DATA_LEN 1024 * 128
 enum GAME_SEVER_MESSAGE
 {
-	SM_LAOD_GAME_MAP = 1,
+	SM_LOAD_GAME = 1,
 	SM_GAME_START,
 	SM_PLAYER_MOVE,
 	SM_GAME_BALANCE,
 	SM_GAME_END,
-	SM_PLAYER_AVATAR_DATA,
-	SM_SELECT_GAME_MAP,
 	SM_GAME_SYNC_TIME,
 	SM_CREATE_DROP_ITEM,
 	SM_REMOVE_DROP_ITEM,
@@ -28,15 +26,14 @@ enum GAME_SEVER_MESSAGE
 };
 enum GAME_CLIENT_MESSAGE
 {
-	CM_REQUEST_LOAD_MAP = 1,
+	CM_OB_PLAYER_JOIN=1,
+	CM_REQUEST_LOAD_GAME,
 	CM_GAME_MAP_LOADED,
 	CM_PLAYER_MOVE,
-	CM_OB_PLAYER_JOIN,
-	CM_PLAYER_AVATAR_DATA,
-	CM_SELECT_GAME_MAP,
 	CM_COMMIT_SCORE,
-	CM_STOP_GAME,
 	CM_GET_DROP_ITEM,
+	CM_STOP_GAME,
+	
 
 };
 
@@ -76,8 +73,8 @@ public:
 	void BalanceGame();
 
 private:
-	void OnRequestSelectMap(Client* c);
-	void OnRequestLoadMap(Client* c);
+	//void OnRequestSelectMap(Client* c);
+	void OnRequestLoadGame(Client* c);
 	void OnClientMapLoaded(Client* c);
 	void StartGame();
 	void SyncGameTime();
@@ -85,10 +82,7 @@ private:
 public:
 	GameState m_GameState;
 private:
-	
-	int m_MapDataLen;
 	int m_BrithIndex;
-	char m_MapData[MAX_MAP_DATA_LEN];
 	float m_GameTotleTime;
 	float m_GameSyncTime;
 	float m_GameShowTime;

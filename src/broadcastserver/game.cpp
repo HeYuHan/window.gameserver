@@ -24,17 +24,11 @@ void Game::OnClientMessage(Client * c)
 		c->m_IsObClient = true;
 		log_info("ob client connect");
 		break;
-	case CM_PLAYER_AVATAR_DATA:
-		OnBroadcastAvatarData(c);
-		break;
-	case CM_SELECT_GAME_MAP:
-		OnRequestSelectMap(c);
-		break;
 	case CM_PLAYER_MOVE:
 		OnPlayerMove(c);
 		break;
-	case CM_REQUEST_LOAD_MAP:
-		OnRequestLoadMap(c);
+	case CM_REQUEST_LOAD_GAME:
+		OnRequestLoadGame(c);
 		break;
 	case CM_GAME_MAP_LOADED:
 		OnClientMapLoaded(c);
@@ -66,35 +60,6 @@ void Game::OnClientDisconnect(Client * c)
 		}
 	}
 	EndGame();
-}
-
-void Game::OnBroadcastAvatarData(Client * c)
-{
-	
-	int data_size = c->read_end - c->read_position;
-	char* data_start = c->read_position;
-	c->m_SetUserInfo = true;
-	c->ReadString(c->m_UserOpenId);
-	c->ReadString(c->m_UserName);
-	c->ReadString(c->m_UserHeadImgUrl);
-	c->ReadString(c->m_CarData);
-	c->m_DBCoinCount = 0;
-	c->m_DBCompleteTime = 0.0f;
-	Client* pool_begin = gServer.m_ClientPool.Begin();
-	for (int i = 0; i < gServer.m_ClientPool.Size(); i++)
-	{
-		Client* other = pool_begin + i;
-		if (other->IsValid())
-		{
-			other->BeginWrite();
-			other->WriteByte(SM_PLAYER_AVATAR_DATA);
-			other->WriteUInt(c->uid);
-			other->WriteData(data_start, data_size);
-			other->EndWrite();
-
-
-		}
-	}
 }
 
 void Game::OnPlayerMove(Client* c)
@@ -138,7 +103,10 @@ void Game::OnPlayerMove(Client* c)
 					other->WriteUInt(c->uid);
 					other->WriteBool(check_dir);
 					other->WriteVector3(out_dir);
-					other->WriteInt(c->m_LastCheckIndex * 100 / gConfig.m_CheckerPointCount);
+					int p = c->m_LastCheckIndex * 100 / gConfig.m_CheckerPointCount;
+					p = MAX(0, p);
+					p = MIN(100, p);
+					other->WriteInt(p);
 					other->EndWrite();
 
 				}
@@ -253,7 +221,6 @@ void Game::OnPlayerGetDropItem(Client * c)
 void Game::ClearData()
 {
 	m_GameState = Wait;
-	m_MapDataLen = 0;
 	m_BrithIndex = 0;
 }
 
@@ -263,16 +230,23 @@ void Game::EndGame()
 	log_info("end game");
 	
 	ClearData();
-	Client* pool_begin = gServer.m_ClientPool.Begin();
-	for (int i = 0; i < gServer.m_ClientPool.Size(); i++)
+	if (gServer.m_ClientPool.Count() > 0)
 	{
-		Client* other = pool_begin + i;
-		if (other->IsValid())
+		Client* pool_begin = gServer.m_ClientPool.Begin();
+		for (int i = 0; i < gServer.m_ClientPool.Size(); i++)
 		{
-			other->connection->Disconnect();
+			Client* other = pool_begin + i;
+			if (other->IsValid())
+			{
+				other->BeginWrite();
+				other->WriteByte(SM_GAME_END);
+				other->EndWrite();
+				other->connection->Disconnect();
 
+			}
 		}
 	}
+
 	
 }
 
@@ -347,36 +321,10 @@ void Game::BalanceGame()
 	}
 }
 
-void Game::OnRequestSelectMap(Client* c)
-{
-	if (m_GameState != Wait)return;
-	int data_size = c->read_end - c->read_position;
-	if (data_size > MAX_MAP_DATA_LEN)
-	{
-		log_error("client map data size too more");
-		c->connection->Disconnect();
-		return;
-	}
-	m_MapDataLen = data_size;
-	memcpy(m_MapData, c->read_position, m_MapDataLen);
-	Client* pool_begin = gServer.m_ClientPool.Begin();
-	for (int i = 0; i < gServer.m_ClientPool.Size(); i++)
-	{
-		Client* other = pool_begin + i;
-		if (other->IsValid() )
-		{
-			other->BeginWrite();
-			other->WriteByte(SM_SELECT_GAME_MAP);
-			other->WriteData(m_MapData, m_MapDataLen);
-			other->EndWrite();
 
-		}
-	}
-}
-
-void Game::OnRequestLoadMap(Client * c)
+void Game::OnRequestLoadGame(Client * c)
 {
-	if (m_GameState > Load)
+	if (m_GameState > Wait)
 	{
 		c->BeginWrite();
 		c->WriteByte(SM_GAME_STATE_ERROR);
@@ -386,8 +334,20 @@ void Game::OnRequestLoadMap(Client * c)
 		
 	}
 	m_GameState = Load;
-	char map_name[256] = { 0 };
-	c->ReadString(map_name, 256);
+
+	int data_size = c->read_end - c->read_position;
+	char* data_start = c->read_position;
+	c->m_SetUserInfo = true;
+	c->ReadString(c->m_UserOpenId);
+	c->ReadString(c->m_UserName);
+	c->ReadString(c->m_UserHeadImgUrl);
+	c->ReadString(c->m_CarData);
+	c->m_DBCoinCount = 0;
+	c->m_DBCompleteTime = 0.0f;
+	c->m_LastCheckIndex = 0;
+	
+
+
 	Client* pool_begin = gServer.m_ClientPool.Begin();
 	for (int i = 0; i < gServer.m_ClientPool.Size(); i++)
 	{
@@ -395,11 +355,12 @@ void Game::OnRequestLoadMap(Client * c)
 		if (other->IsValid())
 		{
 			other->m_MapLoaded = false;
-
 			other->BeginWrite();
-			other->WriteByte(SM_LAOD_GAME_MAP);
-			other->WriteString(map_name);
+			other->WriteByte(SM_LOAD_GAME);
+			other->WriteUInt(c->uid);
+			other->WriteData(data_start, data_size);
 			other->EndWrite();
+
 
 		}
 	}
@@ -443,7 +404,7 @@ void Game::StartGame()
 			other->m_RoadCheckerTag = 0;
 			other->m_Complete = false;
 			BrithPose pose;
-			gConfig.CopyBrithPose(m_BrithIndex++, pose);
+			gConfig.CopyBrithPose(0, pose);
 			other->m_CheckerPosition = pose.position;
 			other->m_Position = pose.position;
 			other->m_Rotation = pose.rotation;
@@ -541,6 +502,7 @@ void Game::OnClientCommitSocre(Client * c)
 			other->EndWrite();
 		}
 	}
+	m_GameRunTime = m_GameTotleTime;
 }
 
 void Game::OnDropItemEvent(DropItemEvent event, AliveDroptItem item, void * arg)
