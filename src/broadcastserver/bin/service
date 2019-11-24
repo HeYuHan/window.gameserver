@@ -1,0 +1,230 @@
+#!/bin/sh
+
+declare -a command_list
+declare -i command_count
+
+declare -a keep_command_list
+declare -i keep_command_count
+
+
+function get_address()
+{
+	addr=`echo $1 | sed -r "s/([0-9.]*):[0-9]+/\1/"`
+	if [ -z $addr ]; then
+		echo ${2:-0.0.0.0}
+	else
+		echo $addr
+	fi
+}
+
+function is_valid_address()
+{
+	addr=`get_address $1`
+
+	# all address is always a valid address
+	if [ "$addr" == "0.0.0.0" ]; then
+		return 0
+	fi
+
+	# search local address
+	for ip in `ifconfig | sed -nr "s/ *inet addr:([0-9.]+).*$/\1/p"`; do
+		if [ "$addr" == "$ip" ]; then
+			return 0
+		fi
+	done
+
+	return 1
+}
+function add_command()
+{
+	command_list[$command_count]="$1"
+	command_count=$command_count+1
+}
+
+function add_keep_command()
+{
+	keep_command_list[$command_count]="$1"
+	keep_command_count=$command_count+1
+}
+
+
+# login_server_addr
+# declare -a channels_file
+# declare -a channels_server_addr
+# declare -i channels_server_addr_count
+
+
+
+function broadserver()
+{
+	# login_server_addr=$1
+	if is_valid_address $1; then
+		CMD="./broadserver"
+        CMD+=" --addr.udp=$1"
+		CMD+=" --addr.tcp=$2"
+		CMD+=" --max=$3"
+		CMD+=" --heart=$4"
+        CMD+=" --log_name=broadserver"
+        CMD+=" --daemon"
+        CMD+=" --log_path=./log/broadserver.log"
+
+	add_command "$CMD"
+	else
+		echo "broadserver addr is not valid: "$1
+	fi
+}
+source `pwd`/config
+
+
+
+# if is_valid_address $login_server_addr; then
+# 	CMD="./loginserver"
+# 	CMD+=" --addr=$login_server_addr"
+# 	CMD+=" --data_path=./loginserver.json"
+# 	CMD+=" --daemon"
+# 	CMD+=" --log_path=../log/loginserver.log"
+# 	add_command "$CMD"
+# else
+# 	echo "add is not valid: "$login_server_addr
+# fi
+
+
+# channel_server_index=0
+# while [[ channel_server_index -lt ${#channels_server_addr[@]} ]]; do  
+#     	channel_server_addr=${channels_server_addr[channel_server_index]}  
+# 	channel_file=${channels_file[channel_server_index]} 
+# 	#echo $channel_server_addr
+# 	#echo $channel_file
+#     let channel_server_index++
+# 	if is_valid_address $channel_server_addr; then
+# 		CMD="./$channel_file"
+# 		CMD+=" --addr=$channel_server_addr"
+# 		CMD+=" --data_path=./channelserver.json"
+# 		CMD+=" --daemon"
+# 		CMD+=" --log_path=../log/channelserver.log"
+# 		add_command "$CMD"
+# 		add_keep_command "$CMD"
+# 	else
+# 		echo "add is not valid: "$login_server_addr
+# 	fi
+# done  
+
+
+
+
+
+
+
+function ps2()
+{
+	pgrep -f "$1" > /dev/null
+	if [[ $? == 0 ]]; then
+		return 1 
+	else
+		return 0
+	fi
+}
+
+
+function start()
+{
+	for c in "${command_list[@]}"; do
+		echo "$c" | awk '{print $1}' | xargs basename | xargs -I{} printf "Starting % -50s" "{} ..."
+		$c
+		sleep 1
+		if $(ps2 "$c"); then
+			echo -ne "[FAILED]\n"
+		else
+			echo -ne "[  OK  ]\n"
+		fi
+	done
+	# sleep 2
+	#keep_process
+	# for c in "${keep_command_list[@]}"; do
+	# 	CMD="./keep_process "
+	# 	CMD+="$c"
+	# 	echo "$CMD" | awk '{print $2}' | xargs basename | xargs -I{} printf "Starting % -50s" "keep_{} ..."
+	# 	( $CMD &)
+	# 	sleep 1
+	# 	if $(ps2 "$CMD"); then
+	# 		echo -ne "[FAILED]\n"
+	# 	else
+	# 		echo -ne "[  OK  ]\n"
+	# 	fi
+	# done
+}
+
+function stop()
+{
+	for c in "${command_list[@]}"; do
+		echo "$c" | awk '{print $1}' | xargs basename | xargs -I{} printf "Stopping % -50s" "{} ..."
+		pkill -f "$c"
+		sleep 1
+		if $(ps2 "$c"); then
+			echo -ne "[  OK  ]\n"
+		else
+			echo -ne "[FAILED]\n"
+		fi
+	done
+
+	#keep_process
+	# for c in "${keep_command_list[@]}"; do
+	# 	CMD="./keep_process "
+	# 	CMD+="$c"
+	# 	echo "$CMD" | awk '{print $2}' | xargs basename | xargs -I{} printf "Stopping % -50s" "keep_{} ..."
+	# 	pkill -f "$CMD"
+	# 	sleep 1
+	# 	if $(ps2 "$CMD"); then
+	# 		echo -ne "[  OK  ]\n"
+	# 	else
+	# 		echo -ne "[FAILED]\n"
+	# 	fi
+	# done
+}
+function countdown() {
+	declare -i seconds
+	declare -i minutes
+	declare -i notified
+	seconds=$2
+	notified=0
+
+	while [ $seconds -gt 0 ]; do
+		minutes=($seconds+59)/60
+		msg=""
+		if [ $minutes -gt 1 ]; then
+			if [ $minutes -ne $notified ]; then
+				msg="服务器将在$minutes分钟后$1"
+				notified=$minutes
+			fi
+		else
+			msg="服务器将在$seconds秒后$1"
+		fi
+
+		if [ -n "$msg" ]; then
+			echo $msg
+			./gmconsole -p $proxy_gm_addr broadcast 0 "/info" "" "$msg"
+		fi
+
+		sleep 1
+		seconds=$seconds-1
+	done
+}
+case "$1" in
+	start)
+		start
+		;;
+	stop)
+		countdown "关闭！" $2
+		stop
+		;;
+	restart)
+		countdown "重新启动！" $2
+		stop
+		sleep 3
+		start
+		;;
+	*)
+		echo "Usage: $0 (start|stop|restart)"
+		exit 1
+		;;
+esac
