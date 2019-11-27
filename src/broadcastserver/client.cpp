@@ -5,6 +5,7 @@
 #include <NetworkConnection.h>
 #include "game.h"
 #include "server.h"
+#include "game_config.h"
 
 USING_NS_CORE
 Client::Client():NetworkStream(1024*1024*2, 1024 * 1024 * 2), m_TcpConnection(this), m_UdpConnection(this)
@@ -40,8 +41,13 @@ void Client::OnConnected()
 	Reset();
 	m_RevciveUID = false;
 	m_IsObClient = false;
+	m_AliveTime = 0;
+	m_SendAliveTime = 0;
 	connection->Send(&uid, sizeof(Core::uint));
-
+	BeginWrite();
+	WriteByte(SM_KEEP_ALIVE);
+	WriteFloat(gConfig.m_KeepAlive);
+	EndWrite();
 
 }
 

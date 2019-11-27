@@ -42,6 +42,22 @@ void Game::OnClientMessage(Client * c)
 	case CM_GET_DROP_ITEM:
 		OnPlayerGetDropItem(c);
 		break;
+	case CM_KEEP_ALIVE:
+		c->m_AliveTime = 0;
+		break;
+	case CM_REQUEST_RESET_POSITION:
+	{
+		c->BeginWrite();
+		c->WriteByte(SM_RESET_POSITION);
+		Vector3 pos = c->m_Position;
+		int index = c->m_RoadCheckerTag == 0 ? 1 : c->m_LastCheckIndex;
+		m_RoadCheckerManager.GetPoint(index, pos);
+		c->WriteVector3(pos);
+		m_RoadCheckerManager.GetPoint(index + 1, pos);
+		c->WriteVector3(pos);
+		c->EndWrite();
+		break;
+	}
 	default:
 		break;
 	}
@@ -91,7 +107,9 @@ void Game::OnPlayerMove(Client* c)
 			c->m_CheckerPosition = pos;
 			Vector3 out_dir;
 			bool check_dir = m_RoadCheckerManager.CheckDir(Normalize(run_dir), pos, c->m_RoadCheckerTag == 0 ? 0 : (c->m_LastCheckIndex + 1),out_dir);
-			
+			if (!check_dir) {
+				log_info("check dir %d", check_dir);
+			}
 			Client* pool_begin = gServer.m_ClientPool.Begin();
 			for (int i = 0; i < gServer.m_ClientPool.Size(); i++)
 			{
@@ -264,6 +282,36 @@ void Game::Update(float t)
 			CloseHandle(hProcess);
 		}
 	}
+	if (m_GameState > Load && gConfig.m_KeepAlive>0)
+	{
+		Client* pool_begin = gServer.m_ClientPool.Begin();
+		for (int i = 0; i < gServer.m_ClientPool.Size(); i++)
+		{
+			Client* other = pool_begin + i;
+
+			if (other->connection)
+			{
+				other->m_SendAliveTime += t;
+				if (other->m_SendAliveTime > 0.99f)
+				{
+					other->m_SendAliveTime = 0;
+					other->BeginWrite();
+					other->WriteByte(SM_KEEP_ALIVE);
+					other->WriteFloat(gConfig.m_KeepAlive);
+					other->EndWrite();
+				}
+
+
+				other->m_AliveTime += t;
+				if (other->m_AliveTime > gConfig.m_KeepAlive)
+				{
+					other->connection->Disconnect();
+					log_error("client alive time out");
+				}
+			}
+		}
+	}
+	
 
 	if (m_GameState == SyncScore)
 	{
@@ -455,9 +503,13 @@ void Game::SyncGameTime()
 				other->BeginWrite();
 				other->WriteByte(SM_RESET_POSITION);
 				Vector3 pos=other->m_Position;
-				m_RoadCheckerManager.GetPoint(other->m_RoadCheckerTag == 0 ? 1: other->m_RoadCheckerTag, pos);
+				int index = other->m_RoadCheckerTag == 0 ? 1 : other->m_LastCheckIndex;
+				m_RoadCheckerManager.GetPoint(index, pos);
+				other->WriteVector3(pos);
+				m_RoadCheckerManager.GetPoint(index+1, pos);
 				other->WriteVector3(pos);
 				other->EndWrite();
+				log_info("reset client pos %f", other->m_Position.y);
 			}
 			if(m_GameSyncTime>5){
 				float dis = Length(other->m_IdlePostion - other->m_Position);
@@ -547,14 +599,12 @@ void Game::OnDropItemEvent(DropItemEvent event, AliveDroptItem item, void * arg)
 			{
 				get_client->m_CoinCount++;
 				get_count = get_client->m_CoinCount;
-				log_info("eat coin");
 			}
 			else
 			{
 				get_client->m_CoinCount--;
 				get_client->m_CoinCount = MAX(get_client->m_CoinCount, 0);
 				get_count = get_client->m_CoinCount;
-				log_info("eat OBSTACLE");
 			}
 			
 		}

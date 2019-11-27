@@ -40,7 +40,7 @@ public:
 	float m_GameBalanceTime;
 	float m_GameBalanceTimeForPad;
 	float m_GameShowTime;
-	
+	float m_KeepAlive;
 	int m_TotalCircle;
 	int m_DropItemCount;
 	int m_BrithPoseCount;

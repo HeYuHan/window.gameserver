@@ -58,6 +58,8 @@ public:
 	bool m_MapLoaded;
 	bool m_RevciveUID;
 	bool m_Complete;
+	float m_AliveTime;
+	float m_SendAliveTime;
 	int m_CoinCount;
 	int m_DBCoinCount;
 	float m_DBCompleteTime;

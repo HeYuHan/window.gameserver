@@ -11,6 +11,8 @@ config.GameTime = ClientConfig.Server.GameTime
 config.GameBalanceTime=ClientConfig.Server.GameBalanceTime
 config.GameBalanceTimeForPad=ClientConfig.Server.GameBalanceTimeForPad
 config.GameShowTime = ClientConfig.Server.GameShowTime
+config.ClientArg = ClientConfig.Server.ClientArg
+config.KeepAlive = ClientConfig.Server.KeepAlive
 local client_config = {
     Lobby=ClientConfig.Lobby,Ingame=ClientConfig.Ingame
 }
@@ -89,7 +91,6 @@ if config_path ~= nil then
         local check_data = cjson.decode(str)
         local array = check_data.data
         local len = #array
-        print('drop obstacle count:' .. len)
         local drop = config:AddDropItem()
         drop.mType = 3
         drop.mMaxCount = 0

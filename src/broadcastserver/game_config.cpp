@@ -77,6 +77,7 @@ bool GameConfig::Init()
 		.addData("GameBalanceTime", &GameConfig::m_GameBalanceTime)
 		.addData("GameBalanceTimeForPad", &GameConfig::m_GameBalanceTimeForPad)
 		.addData("GameShowTime", &GameConfig::m_GameShowTime)
+		.addData("KeepAlive",&GameConfig::m_KeepAlive)
 		.endClass()
 		.addFunction("gConfig", getGlobalConfig)
 		//.addVariable("gConfig", configPointer)
@@ -94,6 +95,7 @@ bool GameConfig::Init()
 	m_BrithPoseCount = 0;
 	m_DropItemCount = 0;
 	m_CheckerPointCount = 0;
+	m_KeepAlive = 5;
 	m_ClientPath = std::string();
 	m_ClientExeArg = std::string();
 	m_ClientConfig = std::string();
