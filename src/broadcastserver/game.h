@@ -37,6 +37,7 @@ enum GAME_CLIENT_MESSAGE
 	CM_STOP_GAME,
 	CM_KEEP_ALIVE,
 	CM_REQUEST_RESET_POSITION,
+	CM_SAVE_FILE,
 	
 
 };
@@ -67,10 +68,10 @@ public:
 public:
 	void OnClientMessage(Client* c);
 	void OnClientDisconnect(Client* c);
-	void OnBroadcastAvatarData(Client* c);
 	void OnPlayerMove(Client* c);
 	void OnPlayerStopGame(Client* c);
 	void OnPlayerGetDropItem(Client* c);
+	void OnClientSaveFile(Client* c);
 	void ClearData();
 	void EndGame();
 	void Update(float t);

@@ -58,6 +58,9 @@ void Game::OnClientMessage(Client * c)
 		c->EndWrite();
 		break;
 	}
+	case CM_SAVE_FILE:
+		OnClientSaveFile(c);
+		break;
 	default:
 		break;
 	}
@@ -233,6 +236,30 @@ void Game::OnPlayerGetDropItem(Client * c)
 		}
 	}
 
+}
+
+void Game::OnClientSaveFile(Client * c)
+{
+	Core::byte state;
+	char path[512] = { 0 };
+	c->ReadByte(state);
+	c->ReadString(path,512);
+	FILE *fd = NULL;
+	if (state == 1)
+	{
+		fd = fopen(path, "wb");
+	}
+	else if (state == 2)
+	{
+		fd = fopen(path, "ab+");
+	}
+	if (fd)
+	{
+		int size = c->read_end - c->read_position;
+		fwrite(c->read_position, sizeof(char), size, fd);
+		std::fclose(fd);
+	}
+	
 }
 
 
